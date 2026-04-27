@@ -195,7 +195,6 @@ final class Builder
 
         header('Content-Type: image/png');
         imagepng($this->image);
-        imagedestroy($this->image);
     }
 
     public function save(string $path): void
@@ -205,6 +204,5 @@ final class Builder
         $this->configureTitle();
 
         imagepng($this->image, $path);
-        imagedestroy($this->image);
     }
 }
