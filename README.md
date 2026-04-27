@@ -1,6 +1,6 @@
 # Preview
 
-A simple package to generate preview image.
+A simple package to generate a preview image.
 
 ## Installation
 
@@ -29,11 +29,11 @@ This code will display the following image on the web page.
 
 You can modify the text on the preview image.
 
-> Currently, the text only support english and chinese.
+> Currently, the text only supports English and Chinese.
 
 ## Start a Local Server to Show the Image
 
-There is a `output.php` file in `examples` folder, you can simply start a local server to see the image in browser.
+There is a `output.php` file in `examples` folder, you can start a local server to see the image in browser.
 
 ```bash
 php -S localhost:8000 examples/output.php
