@@ -17,11 +17,11 @@
         "image"
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-gd": "*"
     },
     "require-dev": {
-        "pestphp/pest": "^3.0.0"
+        "pestphp/pest": "^4.0.0"
     },
     "config": {
         "allow-plugins": {

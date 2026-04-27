@@ -39,7 +39,25 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function imagesAreIdentical(string $actualPath, string $fixturePath): bool
 {
-    // ..
+    $actual = imagecreatefrompng($actualPath);
+    $expected = imagecreatefrompng($fixturePath);
+
+    if (imagesx($actual) !== imagesx($expected) || imagesy($actual) !== imagesy($expected)) {
+        return false;
+    }
+
+    $width = imagesx($actual);
+    $height = imagesy($actual);
+
+    for ($x = 0; $x < $width; $x++) {
+        for ($y = 0; $y < $height; $y++) {
+            if (imagecolorat($actual, $x, $y) !== imagecolorat($expected, $x, $y)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
