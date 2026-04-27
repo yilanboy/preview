@@ -15,7 +15,7 @@ Then create an image builder.
 ```php
 use Yilanboy\Preview\Image\Builder;
 
-(new Builder())
+new Builder()
     ->size(width: 1200, height: 600)
     ->backgroundColor('#777bb3')
     ->header(text: 'Preview', color: 'white', fontSize: 75)
