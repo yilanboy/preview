@@ -9,7 +9,7 @@ use InvalidArgumentException;
 final class Converter
 {
     /**
-     * Check the string is color hex format
+     * Check the string is a color hex format
      */
     public function isHexColor(string $color): bool|int
     {
@@ -31,7 +31,7 @@ final class Converter
     /**
      * Convert color name to hex code
      */
-    public static function nameToHex(string $word): string
+    public function nameToHex(string $word): string
     {
         return match (strtolower($word)) {
             'red' => '#ff0000',
@@ -45,4 +45,11 @@ final class Converter
         };
     }
 
+    /**
+     * Normalize a hex code or color name to a hex code.
+     */
+    public function toHex(string $color): string
+    {
+        return $this->isHexColor($color) ? $color : $this->nameToHex($color);
+    }
 }
