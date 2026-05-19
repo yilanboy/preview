@@ -2,11 +2,11 @@
 
 include_once __DIR__.'/../vendor/autoload.php';
 
-use Yilanboy\Preview\Image\Builder;
-use Yilanboy\Preview\Image\Enums\FontSize;
-use Yilanboy\Preview\Image\TextBlock;
+use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\TextBlock;
 
-new Builder()
+new Generator()
     ->size(width: 1200, height: 600)
     ->backgroundColor('#777bb3')
     ->title(new TextBlock(

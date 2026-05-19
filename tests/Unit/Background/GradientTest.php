@@ -1,7 +1,7 @@
 <?php
 
-use Yilanboy\Preview\Image\Background\Gradient;
-use Yilanboy\Preview\Image\Enums\GradientDirection;
+use Yilanboy\Preview\Canvas\Background\Gradient;
+use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 
 it('defaults to vertical direction', function () {
     $gradient = new Gradient('#10b981', '#3b82f6');

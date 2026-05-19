@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image;
+namespace Yilanboy\Preview\Text;
 
 use RuntimeException;
 

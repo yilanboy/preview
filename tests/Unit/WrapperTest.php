@@ -1,6 +1,6 @@
 <?php
 
-use Yilanboy\Preview\Image\Writer;
+use Yilanboy\Preview\Text\Writer;
 
 it('can wrap the english sentence into words', function () {
     $writer = new Writer;

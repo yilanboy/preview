@@ -1,7 +1,7 @@
 <?php
 
-use Yilanboy\Preview\Image\Background\Image;
-use Yilanboy\Preview\Image\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Background\Image;
+use Yilanboy\Preview\Canvas\Enums\ImageFit;
 
 it('throws when the file does not exist', function () {
     new Image('/this/path/does/not/exist.png');

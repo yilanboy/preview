@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Color;
+namespace Yilanboy\Preview;
 
 use InvalidArgumentException;
 
-final class Converter
+final class ColorConverter
 {
     /**
      * Check the string is a color hex format

@@ -1,18 +1,18 @@
 <?php
 
-use Yilanboy\Preview\Image\Background\Gradient;
-use Yilanboy\Preview\Image\Background\Image as ImageBackground;
-use Yilanboy\Preview\Image\Builder;
-use Yilanboy\Preview\Image\Enums\Alignment;
-use Yilanboy\Preview\Image\Enums\Font;
-use Yilanboy\Preview\Image\Enums\GradientDirection;
-use Yilanboy\Preview\Image\Enums\ImageFit;
-use Yilanboy\Preview\Image\TextBlock;
+use Yilanboy\Preview\Canvas\Background\Gradient;
+use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
+use Yilanboy\Preview\Canvas\Enums\GradientDirection;
+use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\TextBlock;
 
 it('can save png image', function () {
     $filename = 'test.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
@@ -26,7 +26,7 @@ it('matches snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog'))
@@ -46,7 +46,7 @@ it('fails snapshot when title color changes', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog', color: 'red'))
@@ -62,7 +62,7 @@ it('fails snapshot when description color changes', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog'))
@@ -78,7 +78,7 @@ it('fails snapshot when background color changes', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('red')
         ->title(new TextBlock(text: 'My Blog'))
@@ -93,7 +93,7 @@ it('fails snapshot when background color changes', function () {
 it('renders with a gradient background', function (GradientDirection $direction) {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new Gradient('#10b981', '#3b82f6', $direction))
         ->title(new TextBlock(text: 'Gradient', color: 'white'))
@@ -109,7 +109,7 @@ it('renders with an image background', function (ImageFit $fit) {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $bg = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new ImageBackground($bg, $fit))
         ->title(new TextBlock(text: 'Image bg', color: 'white'))
@@ -125,7 +125,7 @@ it('renders with a semi-transparent image background', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $bg = __DIR__.'/../Fixtures/snapshot.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new ImageBackground($bg, ImageFit::Cover, opacity: 0.3, tint: '#000000'))
         ->title(new TextBlock(text: 'Dimmed', color: 'white'))
@@ -141,7 +141,7 @@ it('matches gradient-vertical snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/gradient-vertical.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new Gradient('#10b981', '#3b82f6', GradientDirection::Vertical))
         ->title(new TextBlock(text: 'My Blog', color: 'white'))
@@ -161,7 +161,7 @@ it('matches gradient-diagonal snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/gradient-diagonal.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new Gradient('#fb923c', '#7c3aed', GradientDirection::Diagonal))
         ->title(new TextBlock(text: 'My Blog', color: 'white'))
@@ -179,7 +179,7 @@ it('matches gradient-diagonal snapshot', function () {
 
 it('matches image-cover snapshot', function () {
     $source = tempnam(sys_get_temp_dir(), 'src_').'.png';
-    (new Builder)
+    new Generator()
         ->size(width: 400, height: 200)
         ->background(new Gradient('#ef4444', '#1d4ed8', GradientDirection::Diagonal))
         ->save($source);
@@ -187,7 +187,7 @@ it('matches image-cover snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/image-cover.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->background(new ImageBackground($source, ImageFit::Cover))
         ->title(new TextBlock(text: 'Image bg', color: 'white'))
@@ -208,7 +208,7 @@ it('matches inter-font snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/inter-font.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog', font: Font::Inter))
@@ -230,7 +230,7 @@ it('matches chinese-text snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/chinese-text.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: '我的部落格'))
@@ -250,7 +250,7 @@ it('matches centered-text snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/centered-text.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog', alignment: Alignment::Center))
@@ -274,7 +274,7 @@ it('matches long-wrapping-text snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/long-wrapping-text.png';
 
-    (new Builder)
+    new Generator()
         ->size(width: 1200, height: 600)
         ->backgroundColor('#10b981')
         ->title(new TextBlock(text: 'My Blog'))

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image\Enums;
+namespace Yilanboy\Preview\Text\Enums;
 
 enum Alignment
 {

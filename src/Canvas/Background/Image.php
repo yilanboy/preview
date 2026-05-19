@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image\Background;
+namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
-use Yilanboy\Preview\Color\Converter;
-use Yilanboy\Preview\Image\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\ColorConverter;
 
 final readonly class Image implements Background
 {
@@ -27,11 +27,11 @@ final readonly class Image implements Background
         }
     }
 
-    public function apply(GdImage $image, int $width, int $height, Converter $converter): void
+    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
     {
-        // When opacity < 1 the tint shows through the partial transparency.
+        // When opacity < 1, the tint shows through the partial transparency.
         if ($this->opacity < 1.0) {
-            (new Solid($this->tint))->apply($image, $width, $height, $converter);
+            new Solid($this->tint)->draw($image, $width, $height, $converter);
         }
 
         $contents = file_get_contents($this->path);
@@ -58,13 +58,27 @@ final readonly class Image implements Background
         };
     }
 
-    private function stretch(GdImage $dst, GdImage $src, int $dstWidth, int $dstHeight, int $srcWidth, int $srcHeight, int $pct): void
-    {
+    private function stretch(
+        GdImage $dst,
+        GdImage $src,
+        int $dstWidth,
+        int $dstHeight,
+        int $srcWidth,
+        int $srcHeight,
+        int $pct
+    ): void {
         $this->blendResized($dst, $src, 0, 0, $dstWidth, $dstHeight, $srcWidth, $srcHeight, $pct);
     }
 
-    private function cover(GdImage $dst, GdImage $src, int $dstWidth, int $dstHeight, int $srcWidth, int $srcHeight, int $pct): void
-    {
+    private function cover(
+        GdImage $dst,
+        GdImage $src,
+        int $dstWidth,
+        int $dstHeight,
+        int $srcWidth,
+        int $srcHeight,
+        int $pct
+    ): void {
         $scale = max($dstWidth / $srcWidth, $dstHeight / $srcHeight);
         $newWidth = (int) round($srcWidth * $scale);
         $newHeight = (int) round($srcHeight * $scale);
@@ -74,8 +88,15 @@ final readonly class Image implements Background
         $this->blendResized($dst, $src, $offsetX, $offsetY, $newWidth, $newHeight, $srcWidth, $srcHeight, $pct);
     }
 
-    private function contain(GdImage $dst, GdImage $src, int $dstWidth, int $dstHeight, int $srcWidth, int $srcHeight, int $pct): void
-    {
+    private function contain(
+        GdImage $dst,
+        GdImage $src,
+        int $dstWidth,
+        int $dstHeight,
+        int $srcWidth,
+        int $srcHeight,
+        int $pct
+    ): void {
         $scale = min($dstWidth / $srcWidth, $dstHeight / $srcHeight);
         $newWidth = (int) round($srcWidth * $scale);
         $newHeight = (int) round($srcHeight * $scale);
@@ -85,8 +106,15 @@ final readonly class Image implements Background
         $this->blendResized($dst, $src, $offsetX, $offsetY, $newWidth, $newHeight, $srcWidth, $srcHeight, $pct);
     }
 
-    private function tile(GdImage $dst, GdImage $src, int $dstWidth, int $dstHeight, int $srcWidth, int $srcHeight, int $pct): void
-    {
+    private function tile(
+        GdImage $dst,
+        GdImage $src,
+        int $dstWidth,
+        int $dstHeight,
+        int $srcWidth,
+        int $srcHeight,
+        int $pct
+    ): void {
         for ($y = 0; $y < $dstHeight; $y += $srcHeight) {
             for ($x = 0; $x < $dstWidth; $x += $srcWidth) {
                 if ($pct === 100) {
@@ -98,8 +126,17 @@ final readonly class Image implements Background
         }
     }
 
-    private function blendResized(GdImage $dst, GdImage $src, int $dstX, int $dstY, int $newWidth, int $newHeight, int $srcWidth, int $srcHeight, int $pct): void
-    {
+    private function blendResized(
+        GdImage $dst,
+        GdImage $src,
+        int $dstX,
+        int $dstY,
+        int $newWidth,
+        int $newHeight,
+        int $srcWidth,
+        int $srcHeight,
+        int $pct
+    ): void {
         if ($pct === 100) {
             imagecopyresampled($dst, $src, $dstX, $dstY, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
 

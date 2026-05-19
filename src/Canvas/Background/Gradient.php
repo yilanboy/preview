@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image\Background;
+namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
-use Yilanboy\Preview\Color\Converter;
-use Yilanboy\Preview\Image\Enums\GradientDirection;
+use Yilanboy\Preview\Canvas\Enums\GradientDirection;
+use Yilanboy\Preview\ColorConverter;
 
 final readonly class Gradient implements Background
 {
@@ -14,9 +14,10 @@ final readonly class Gradient implements Background
         public string $from,
         public string $to,
         public GradientDirection $direction = GradientDirection::Vertical,
-    ) {}
+    ) {
+    }
 
-    public function apply(GdImage $image, int $width, int $height, Converter $converter): void
+    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
     {
         $from = $converter->hexToRgb($converter->toHex($this->from));
         $to = $converter->hexToRgb($converter->toHex($this->to));

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image\Background;
+namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
 use RuntimeException;
-use Yilanboy\Preview\Color\Converter;
+use Yilanboy\Preview\ColorConverter;
 
 final readonly class Solid implements Background
 {
-    public function __construct(public string $color) {}
+    public function __construct(public string $color)
+    {
+    }
 
-    public function apply(GdImage $image, int $width, int $height, Converter $converter): void
+    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
     {
         $rgb = $converter->hexToRgb($converter->toHex($this->color));
         $allocated = imagecolorallocate($image, ...$rgb);

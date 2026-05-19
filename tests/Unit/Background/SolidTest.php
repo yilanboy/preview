@@ -1,6 +1,6 @@
 <?php
 
-use Yilanboy\Preview\Image\Background\Solid;
+use Yilanboy\Preview\Canvas\Background\Solid;
 
 it('stores the color verbatim', function () {
     $solid = new Solid('#10b981');

@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Image;
+namespace Yilanboy\Preview;
 
 use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
-use Yilanboy\Preview\Color\Converter;
-use Yilanboy\Preview\Image\Background\Background;
-use Yilanboy\Preview\Image\Background\Solid;
-use Yilanboy\Preview\Image\Enums\Alignment;
-use Yilanboy\Preview\Image\Enums\Position;
+use Yilanboy\Preview\Canvas\Background\Background;
+use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Position;
+use Yilanboy\Preview\Text\TextBlock;
+use Yilanboy\Preview\Text\Writer;
 
-final class Builder
+final class Generator
 {
     private const float MARGIN_RATIO = 0.05;
 
@@ -28,8 +29,8 @@ final class Builder
     private ?TextBlock $description = null;
 
     public function __construct(
-        private readonly Converter $converter = new Converter,
-        private readonly Writer $writer = new Writer,
+        private readonly ColorConverter $converter = new ColorConverter(),
+        private readonly Writer $writer = new Writer(),
     ) {
         $this->background = new Solid('#f9fafb');
     }
@@ -99,14 +100,14 @@ final class Builder
             throw new RuntimeException('Failed to create image canvas');
         }
 
-        $this->background->apply($image, $this->width, $this->height, $this->converter);
+        $this->background->draw($image, $this->width, $this->height, $this->converter);
 
         if ($this->title !== null) {
-            $this->drawTextBlock($image, $this->title, Position::Top);
+            $this->drawTextBlock($image, $this->title, $this->title->position ?? Position::Top);
         }
 
         if ($this->description !== null) {
-            $this->drawTextBlock($image, $this->description, Position::Center);
+            $this->drawTextBlock($image, $this->description, $this->description->position ?? Position::Center);
         }
 
         return $image;

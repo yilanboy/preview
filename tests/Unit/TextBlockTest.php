@@ -1,9 +1,10 @@
 <?php
 
-use Yilanboy\Preview\Image\Enums\Alignment;
-use Yilanboy\Preview\Image\Enums\Font;
-use Yilanboy\Preview\Image\Enums\FontSize;
-use Yilanboy\Preview\Image\TextBlock;
+use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\Enums\Position;
+use Yilanboy\Preview\Text\TextBlock;
 
 it('throws when text is empty', function () {
     new TextBlock(text: '');
@@ -24,5 +25,27 @@ it('uses sensible defaults when only text is provided', function () {
     expect($block->color)->toBe('#030712')
         ->and($block->fontSize)->toBe(FontSize::Medium)
         ->and($block->font)->toBe(Font::NotoSansTC)
-        ->and($block->alignment)->toBe(Alignment::Left);
+        ->and($block->alignment)->toBe(Alignment::Left)
+        ->and($block->position)->toBeNull();
+});
+
+it('accepts an explicit vertical position', function () {
+    $block = new TextBlock(text: 'Hello', position: Position::Bottom);
+
+    expect($block->position)->toBe(Position::Bottom);
+});
+
+it('returns a new instance with updated position', function () {
+    $original = new TextBlock(text: 'Hello', position: Position::Top);
+    $modified = $original->withPosition(Position::Bottom);
+
+    expect($original->position)->toBe(Position::Top)
+        ->and($modified->position)->toBe(Position::Bottom)
+        ->and($original)->not->toBe($modified);
+});
+
+it('clears position when withPosition receives null', function () {
+    $block = new TextBlock(text: 'Hello', position: Position::Bottom);
+
+    expect($block->withPosition(null)->position)->toBeNull();
 });
