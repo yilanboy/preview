@@ -39,8 +39,17 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function imagesAreIdentical(string $actualPath, string $fixturePath): bool
-{
+function imagesMatch(
+    string $actualPath,
+    string $fixturePath,
+    int $colorThreshold = 32,
+    float $clusterThreshold = 0.005,
+    int $minClusterNeighbors = 5,
+): bool {
+    // Cluster-based comparison so one fixture works across macOS/Linux.
+    // FreeType produces scattered single-pixel diffs along glyph edges
+    // that don't share neighbors. Real content changes produce contiguous
+    // regions where most differing pixels have differing neighbors.
     $actual = imagecreatefrompng($actualPath);
     $expected = imagecreatefrompng($fixturePath);
 
@@ -50,14 +59,43 @@ function imagesAreIdentical(string $actualPath, string $fixturePath): bool
 
     $width = imagesx($actual);
     $height = imagesy($actual);
+    $mask = array_fill(0, $width * $height, 0);
 
-    for ($x = 0; $x < $width; $x++) {
-        for ($y = 0; $y < $height; $y++) {
-            if (imagecolorat($actual, $x, $y) !== imagecolorat($expected, $x, $y)) {
-                return false;
+    for ($y = 0; $y < $height; $y++) {
+        $row = $y * $width;
+        for ($x = 0; $x < $width; $x++) {
+            $a = imagecolorat($actual, $x, $y);
+            $b = imagecolorat($expected, $x, $y);
+
+            if ($a === $b) {
+                continue;
+            }
+
+            $dr = abs((($a >> 16) & 0xFF) - (($b >> 16) & 0xFF));
+            $dg = abs((($a >> 8) & 0xFF) - (($b >> 8) & 0xFF));
+            $db = abs(($a & 0xFF) - ($b & 0xFF));
+
+            if (max($dr, $dg, $db) > $colorThreshold) {
+                $mask[$row + $x] = 1;
             }
         }
     }
 
-    return true;
+    $clustered = 0;
+    for ($y = 1; $y < $height - 1; $y++) {
+        $row = $y * $width;
+        for ($x = 1; $x < $width - 1; $x++) {
+            if (! $mask[$row + $x]) {
+                continue;
+            }
+            $n = $mask[$row - $width + $x - 1] + $mask[$row - $width + $x] + $mask[$row - $width + $x + 1]
+               + $mask[$row + $x - 1]                                     + $mask[$row + $x + 1]
+               + $mask[$row + $width + $x - 1] + $mask[$row + $width + $x] + $mask[$row + $width + $x + 1];
+            if ($n >= $minClusterNeighbors) {
+                $clustered++;
+            }
+        }
+    }
+
+    return ($clustered / ($width * $height)) <= $clusterThreshold;
 }
