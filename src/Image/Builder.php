@@ -8,6 +8,8 @@ use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Color\Converter;
+use Yilanboy\Preview\Image\Background\Background;
+use Yilanboy\Preview\Image\Background\Solid;
 use Yilanboy\Preview\Image\Enums\Alignment;
 use Yilanboy\Preview\Image\Enums\Position;
 
@@ -19,7 +21,7 @@ final class Builder
 
     private int $height = 600;
 
-    private string $backgroundColor = '#f9fafb';
+    private Background $background;
 
     private ?TextBlock $title = null;
 
@@ -28,7 +30,9 @@ final class Builder
     public function __construct(
         private readonly Converter $converter = new Converter,
         private readonly Writer $writer = new Writer,
-    ) {}
+    ) {
+        $this->background = new Solid('#f9fafb');
+    }
 
     public function size(int $width, int $height): self
     {
@@ -42,11 +46,16 @@ final class Builder
         return $this;
     }
 
-    public function backgroundColor(string $color): self
+    public function background(Background $background): self
     {
-        $this->backgroundColor = $this->converter->toHex($color);
+        $this->background = $background;
 
         return $this;
+    }
+
+    public function backgroundColor(string $color): self
+    {
+        return $this->background(new Solid($color));
     }
 
     public function title(TextBlock $block): self
@@ -90,7 +99,7 @@ final class Builder
             throw new RuntimeException('Failed to create image canvas');
         }
 
-        imagefill($image, 0, 0, $this->allocateColor($image, $this->backgroundColor));
+        $this->background->apply($image, $this->width, $this->height, $this->converter);
 
         if ($this->title !== null) {
             $this->drawTextBlock($image, $this->title, Position::Top);

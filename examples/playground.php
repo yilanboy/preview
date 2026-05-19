@@ -2,9 +2,14 @@
 
 include_once __DIR__.'/../vendor/autoload.php';
 
+use Yilanboy\Preview\Image\Background\Gradient;
+use Yilanboy\Preview\Image\Background\Image as ImageBackground;
+use Yilanboy\Preview\Image\Background\Solid;
 use Yilanboy\Preview\Image\Builder;
 use Yilanboy\Preview\Image\Enums\Font;
 use Yilanboy\Preview\Image\Enums\FontSize;
+use Yilanboy\Preview\Image\Enums\GradientDirection;
+use Yilanboy\Preview\Image\Enums\ImageFit;
 use Yilanboy\Preview\Image\TextBlock;
 
 const DEFAULT_TITLE_TEXT = 'My Blog';
@@ -12,6 +17,8 @@ const DEFAULT_TITLE_COLOR = '#ffffff';
 const DEFAULT_DESC_TEXT = 'A simple PHP package to create preview image';
 const DEFAULT_DESC_COLOR = '#ffffff';
 const DEFAULT_BG_COLOR = '#777bb3';
+const DEFAULT_GRADIENT_FROM = '#10b981';
+const DEFAULT_GRADIENT_TO = '#3b82f6';
 
 $titleData = is_array($_POST['title'] ?? null) ? $_POST['title'] : [];
 $descriptionData = is_array($_POST['description'] ?? null) ? $_POST['description'] : [];
@@ -27,11 +34,67 @@ $descriptionColor = ((string) ($descriptionData['color'] ?? '')) ?: DEFAULT_DESC
 $descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? Font::NotoSansTC;
 $descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Medium;
 
-$backgroundColor = ((string) ($backgroundData['color'] ?? '')) ?: DEFAULT_BG_COLOR;
+// Background dispatch. The discriminator $_POST['background'][type] is one of:
+//   'solid'    -> background[solid][color]
+//   'gradient' -> background[gradient][from], background[gradient][to], background[gradient][direction]
+//   'image'    -> background[image][path], background[image][fit],
+//                 background[image][opacity], background[image][tint]
+$backgroundType = (string) ($backgroundData['type'] ?? 'solid');
+if (! in_array($backgroundType, ['solid', 'gradient', 'image'], true)) {
+    $backgroundType = 'solid';
+}
 
-$builder = new Builder()
-    ->size(width: 1200, height: 600)
-    ->backgroundColor($backgroundColor);
+$solidData = is_array($backgroundData['solid'] ?? null) ? $backgroundData['solid'] : [];
+$gradientData = is_array($backgroundData['gradient'] ?? null) ? $backgroundData['gradient'] : [];
+$imageData = is_array($backgroundData['image'] ?? null) ? $backgroundData['image'] : [];
+
+$solidColor = ((string) ($solidData['color'] ?? '')) ?: DEFAULT_BG_COLOR;
+$gradientFrom = ((string) ($gradientData['from'] ?? '')) ?: DEFAULT_GRADIENT_FROM;
+$gradientTo = ((string) ($gradientData['to'] ?? '')) ?: DEFAULT_GRADIENT_TO;
+$gradientDirectionName = (string) ($gradientData['direction'] ?? 'Vertical');
+$gradientDirection = match ($gradientDirectionName) {
+    'Horizontal' => GradientDirection::Horizontal,
+    'Diagonal' => GradientDirection::Diagonal,
+    default => GradientDirection::Vertical,
+};
+$imagePath = (string) ($imageData['path'] ?? '');
+$imageFitName = (string) ($imageData['fit'] ?? 'Cover');
+$imageFit = match ($imageFitName) {
+    'Contain' => ImageFit::Contain,
+    'Stretch' => ImageFit::Stretch,
+    'Tile' => ImageFit::Tile,
+    default => ImageFit::Cover,
+};
+// Clamp opacity to [0.0, 1.0] so an out-of-range POST value (e.g., from a tampered
+// form) doesn't trigger the InvalidArgumentException from the Image constructor.
+$imageOpacityRaw = $imageData['opacity'] ?? null;
+$imageOpacity = $imageOpacityRaw === null || $imageOpacityRaw === '' ? 1.0 : (float) $imageOpacityRaw;
+$imageOpacity = max(0.0, min(1.0, $imageOpacity));
+$imageTint = ((string) ($imageData['tint'] ?? '')) ?: '#000000';
+
+$backgroundError = null;
+
+$builder = new Builder()->size(width: 1200, height: 600);
+
+try {
+    match ($backgroundType) {
+        'gradient' => $builder->background(new Gradient(
+            from: $gradientFrom,
+            to: $gradientTo,
+            direction: $gradientDirection,
+        )),
+        'image' => $builder->background(new ImageBackground(
+            path: $imagePath,
+            fit: $imageFit,
+            opacity: $imageOpacity,
+            tint: $imageTint,
+        )),
+        default => $builder->backgroundColor($solidColor),
+    };
+} catch (InvalidArgumentException $e) {
+    $backgroundError = $e->getMessage();
+    $builder->backgroundColor($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR);
+}
 
 if ($titleText !== '') {
     $builder->title(new TextBlock(
@@ -83,6 +146,22 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
         button { padding: 0.625rem 1.25rem; font: inherit; background: #777bb3; color: #fff; border: 0; border-radius: 6px; cursor: pointer; width: fit-content; }
         button:hover { background: #65689c; }
         img { max-width: 100%; border: 1px solid #e5e7eb; border-radius: 6px; display: block; }
+        .bg-tabs { display: flex; gap: 0.25rem; padding: 0.25rem; background: #f3f4f6; border-radius: 6px; width: fit-content; }
+        .bg-tabs label { flex-direction: row; align-items: center; cursor: pointer; padding: 0.375rem 0.875rem; border-radius: 4px; font-size: 0.875rem; color: #4b5563; user-select: none; }
+        .bg-tabs label:hover { color: #1f2937; }
+        .bg-tabs input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+        .bg-tabs input[type="radio"]:checked + span { color: #1f2937; font-weight: 600; }
+        .bg-tabs label:has(input[type="radio"]:checked) { background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); }
+        .bg-tabs label:focus-within { outline: 2px solid #777bb3; outline-offset: 1px; }
+        .bg-mode { display: none; flex-direction: column; gap: 0.75rem; }
+        .bg-mode.is-active { display: flex; }
+        .gradient-preview { width: 100%; height: 4rem; border-radius: 6px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, <?= htmlspecialchars($gradientFrom) ?>, <?= htmlspecialchars($gradientTo) ?>); }
+        .opacity-control { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
+        .opacity-control:focus-within { outline: 2px solid #777bb3; outline-offset: -1px; border-color: transparent; }
+        .opacity-control input[type="range"] { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; accent-color: #777bb3; }
+        .opacity-control input[type="range"]:focus { outline: 0; }
+        .opacity-readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; color: #4b5563; min-width: 2.5rem; text-align: right; }
+        .error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.875rem; }
     </style>
 </head>
 <body>
@@ -90,13 +169,94 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
     <form method="post">
         <fieldset>
             <legend>Background</legend>
-            <label>
-                Color
-                <span class="color-input">
-                    <span class="color-swatch" style="background: <?= htmlspecialchars($backgroundColor) ?>"></span>
-                    <input name="background[color]" value="<?= htmlspecialchars($backgroundColor) ?>" autocomplete="off">
-                </span>
-            </label>
+            <div class="bg-tabs" role="tablist">
+                <?php foreach (['solid' => 'Solid', 'gradient' => 'Gradient', 'image' => 'Image'] as $value => $label) { ?>
+                    <label>
+                        <input type="radio" name="background[type]" value="<?= $value ?>" <?= $backgroundType === $value ? 'checked' : '' ?> data-bg-tab="<?= $value ?>">
+                        <span><?= $label ?></span>
+                    </label>
+                <?php } ?>
+            </div>
+
+            <?php if ($backgroundError !== null) { ?>
+                <div class="error">Background error: <?= htmlspecialchars($backgroundError) ?> (fell back to solid color)</div>
+            <?php } ?>
+
+            <div class="bg-mode <?= $backgroundType === 'solid' ? 'is-active' : '' ?>" data-bg-panel="solid">
+                <label>
+                    Color
+                    <span class="color-input">
+                        <span class="color-swatch" style="background: <?= htmlspecialchars($solidColor) ?>"></span>
+                        <input name="background[solid][color]" value="<?= htmlspecialchars($solidColor) ?>" autocomplete="off">
+                    </span>
+                </label>
+            </div>
+
+            <div class="bg-mode <?= $backgroundType === 'gradient' ? 'is-active' : '' ?>" data-bg-panel="gradient">
+                <div class="row">
+                    <label>
+                        From
+                        <span class="color-input">
+                            <span class="color-swatch" style="background: <?= htmlspecialchars($gradientFrom) ?>"></span>
+                            <input name="background[gradient][from]" value="<?= htmlspecialchars($gradientFrom) ?>" autocomplete="off" data-gradient="from">
+                        </span>
+                    </label>
+                    <label>
+                        To
+                        <span class="color-input">
+                            <span class="color-swatch" style="background: <?= htmlspecialchars($gradientTo) ?>"></span>
+                            <input name="background[gradient][to]" value="<?= htmlspecialchars($gradientTo) ?>" autocomplete="off" data-gradient="to">
+                        </span>
+                    </label>
+                    <label>
+                        Direction
+                        <select name="background[gradient][direction]" data-gradient="direction">
+                            <?php foreach (GradientDirection::cases() as $direction) { ?>
+                                <option value="<?= $direction->name ?>" <?= $direction === $gradientDirection ? 'selected' : '' ?>>
+                                    <?= $direction->name ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </label>
+                </div>
+                <label>
+                    Live preview
+                    <span class="gradient-preview" id="gradient-preview" aria-hidden="true"></span>
+                </label>
+            </div>
+
+            <div class="bg-mode <?= $backgroundType === 'image' ? 'is-active' : '' ?>" data-bg-panel="image">
+                <label>
+                    Path (absolute, server-readable)
+                    <input name="background[image][path]" value="<?= htmlspecialchars($imagePath) ?>" placeholder="/absolute/path/to/file.png" autocomplete="off">
+                </label>
+                <div class="row">
+                    <label>
+                        Fit
+                        <select name="background[image][fit]">
+                            <?php foreach (ImageFit::cases() as $fit) { ?>
+                                <option value="<?= $fit->name ?>" <?= $fit === $imageFit ? 'selected' : '' ?>>
+                                    <?= $fit->name ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </label>
+                    <label>
+                        Opacity
+                        <span class="opacity-control">
+                            <input type="range" name="background[image][opacity]" min="0" max="1" step="0.05" value="<?= htmlspecialchars((string) $imageOpacity) ?>" data-opacity-input autocomplete="off">
+                            <span class="opacity-readout" data-opacity-readout><?= number_format($imageOpacity, 2) ?></span>
+                        </span>
+                    </label>
+                    <label>
+                        Tint
+                        <span class="color-input">
+                            <span class="color-swatch" style="background: <?= htmlspecialchars($imageTint) ?>"></span>
+                            <input name="background[image][tint]" value="<?= htmlspecialchars($imageTint) ?>" autocomplete="off">
+                        </span>
+                    </label>
+                </div>
+            </div>
         </fieldset>
 
         <fieldset>
@@ -180,15 +340,76 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
     <img src="<?= $imageDataUri ?>" alt="Generated preview image">
 
     <script>
+        // Named color fallback so swatches and the gradient preview understand the
+        // 7 names Converter accepts in addition to hex.
+        const NAMED_COLORS = {
+            red: '#ff0000', green: '#008000', blue: '#0000ff', yellow: '#ffff00',
+            orange: '#ffa500', white: '#ffffff', black: '#000000',
+        };
+
+        function normalizeColor(value) {
+            const trimmed = value.trim().toLowerCase();
+            if (/^#[0-9a-f]{6}$/.test(trimmed)) return trimmed;
+            if (NAMED_COLORS[trimmed]) return NAMED_COLORS[trimmed];
+            return null;
+        }
+
+        // Color swatches next to every color input.
         document.querySelectorAll('.color-input').forEach(function (wrapper) {
             const input = wrapper.querySelector('input');
             const swatch = wrapper.querySelector('.color-swatch');
             input.addEventListener('input', function () {
-                if (/^#[0-9a-fA-F]{6}$/.test(input.value)) {
-                    swatch.style.background = input.value;
-                }
+                const color = normalizeColor(input.value);
+                if (color !== null) swatch.style.background = color;
             });
         });
+
+        // Opacity slider readout: show the current 0.00 – 1.00 value next to the
+        // range input so users can see the exact ratio as they drag.
+        document.querySelectorAll('[data-opacity-input]').forEach(function (input) {
+            const readout = input.parentElement.querySelector('[data-opacity-readout]');
+            if (readout === null) return;
+            input.addEventListener('input', function () {
+                readout.textContent = parseFloat(input.value).toFixed(2);
+            });
+        });
+
+        // Background mode tabs: show only the panel matching the selected radio.
+        const tabRadios = document.querySelectorAll('input[name="background[type]"]');
+        const panels = document.querySelectorAll('[data-bg-panel]');
+        tabRadios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                if (!radio.checked) return;
+                panels.forEach(function (panel) {
+                    panel.classList.toggle('is-active', panel.dataset.bgPanel === radio.value);
+                });
+            });
+        });
+
+        // Live CSS gradient preview. Maps the library's three directions to the
+        // equivalent CSS linear-gradient syntax so what you see is what the PNG
+        // will render.
+        const DIRECTION_CSS = {
+            Vertical: 'to bottom',
+            Horizontal: 'to right',
+            Diagonal: 'to bottom right',
+        };
+        const gradientPreview = document.getElementById('gradient-preview');
+        const gradientFromInput = document.querySelector('input[data-gradient="from"]');
+        const gradientToInput = document.querySelector('input[data-gradient="to"]');
+        const gradientDirSelect = document.querySelector('select[data-gradient="direction"]');
+
+        function updateGradientPreview() {
+            const from = normalizeColor(gradientFromInput.value) ?? '#000000';
+            const to = normalizeColor(gradientToInput.value) ?? '#ffffff';
+            const dir = DIRECTION_CSS[gradientDirSelect.value] ?? 'to bottom';
+            gradientPreview.style.background = `linear-gradient(${dir}, ${from}, ${to})`;
+        }
+
+        gradientFromInput.addEventListener('input', updateGradientPreview);
+        gradientToInput.addEventListener('input', updateGradientPreview);
+        gradientDirSelect.addEventListener('change', updateGradientPreview);
+        updateGradientPreview();
     </script>
 </body>
 </html>
