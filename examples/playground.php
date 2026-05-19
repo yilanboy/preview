@@ -188,9 +188,9 @@ function renderAlignmentSelector(string $name, Alignment $selected): void
         SVG;
 
     $options = [
-        'Left'   => ['icon' => $iconLeft, 'label' => 'Align left', 'case' => Alignment::Left],
+        'Left' => ['icon' => $iconLeft, 'label' => 'Align left', 'case' => Alignment::Left],
         'Center' => ['icon' => $iconCenter, 'label' => 'Align center', 'case' => Alignment::Center],
-        'Right'  => ['icon' => $iconRight, 'label' => 'Align right', 'case' => Alignment::Right],
+        'Right' => ['icon' => $iconRight, 'label' => 'Align right', 'case' => Alignment::Right],
     ];
     ?>
     <span class="align-group" role="radiogroup" aria-label="Alignment">
@@ -242,7 +242,7 @@ function renderPositionSelector(string $name, Position $selected): void
         SVG;
 
     $options = [
-        'Top'    => ['icon' => $iconTop, 'label' => 'Anchor top', 'case' => Position::Top],
+        'Top' => ['icon' => $iconTop, 'label' => 'Anchor top', 'case' => Position::Top],
         'Center' => ['icon' => $iconMiddle, 'label' => 'Anchor middle', 'case' => Position::Center],
         'Bottom' => ['icon' => $iconBottom, 'label' => 'Anchor bottom', 'case' => Position::Bottom],
     ];
@@ -735,7 +735,7 @@ function renderPositionSelector(string $name, Position $selected): void
                                    value="<?= htmlspecialchars((string) $imageOpacity) ?>" data-opacity-input
                                    autocomplete="off">
                             <span class="opacity-readout" data-opacity-readout><?= number_format($imageOpacity,
-                                    2) ?></span>
+                                2) ?></span>
                         </span>
                 </label>
                 <label>

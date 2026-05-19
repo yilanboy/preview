@@ -10,9 +10,7 @@ use Yilanboy\Preview\ColorConverter;
 
 final readonly class Solid implements Background
 {
-    public function __construct(public string $color)
-    {
-    }
+    public function __construct(public string $color) {}
 
     public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
     {

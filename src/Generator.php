@@ -28,10 +28,9 @@ final class Generator
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
-        private readonly ColorConverter $converter = new ColorConverter(),
-        private readonly Writer $writer = new Writer(),
-    ) {
-    }
+        private readonly ColorConverter $converter = new ColorConverter,
+        private readonly Writer $writer = new Writer,
+    ) {}
 
     public function size(int $width, int $height): self
     {

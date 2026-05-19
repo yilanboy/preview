@@ -14,8 +14,7 @@ final readonly class Gradient implements Background
         public string $from,
         public string $to,
         public GradientDirection $direction = GradientDirection::Vertical,
-    ) {
-    }
+    ) {}
 
     public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
     {
