@@ -57,10 +57,10 @@ Available customization enums live under `Yilanboy\Preview\Image\Enums`:
 
 ## Start a Local Server to Show the Image
 
-There is a `output.php` file in `examples` folder, you can start a local server to see the image in browser.
+There is a `playground.php` file in `examples` folder. Start a local server to open an interactive form where you can edit the title, description, colors, font, and font size, then see the rendered image update below.
 
 ```bash
-php -S localhost:8000 examples/output.php
+php -S localhost:8000 examples/playground.php
 ```
 
 Then open your browser and visit [localhost:8000](http://localhost:8000).
