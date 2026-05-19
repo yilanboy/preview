@@ -49,15 +49,64 @@ Available customization enums live under `Yilanboy\Preview\Image\Enums`:
 
 | Enum | Cases |
 |---|---|
-| `Font` | `NotoSansTC` |
+| `Font` | `NotoSansTC` · `NotoSans` · `Inter` · `Roboto` |
 | `FontSize` | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
 | `Alignment` | `Left` · `Center` · `Right` |
 
+All four bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese; the other three are Latin-only.
+
 > Currently, the text only supports English and Chinese.
+
+## Backgrounds
+
+`Builder::background()` accepts anything implementing the `Background` interface. Three implementations ship with the package.
+
+**Solid** — a flat color. `backgroundColor('#hex')` is a shortcut for this.
+
+```php
+use Yilanboy\Preview\Image\Background\Solid;
+
+$builder->background(new Solid('#777bb3'));
+```
+
+**Gradient** — two colors interpolated across the canvas.
+
+```php
+use Yilanboy\Preview\Image\Background\Gradient;
+use Yilanboy\Preview\Image\Enums\GradientDirection;
+
+$builder->background(new Gradient(
+    from: '#1e3a8a',
+    to: '#9333ea',
+    direction: GradientDirection::Diagonal,
+));
+```
+
+`GradientDirection` cases: `Vertical` (default) · `Horizontal` · `Diagonal`.
+
+**Image** — render a bitmap behind your text.
+
+```php
+use Yilanboy\Preview\Image\Background\Image;
+use Yilanboy\Preview\Image\Enums\ImageFit;
+
+$builder->background(new Image(
+    path: __DIR__.'/cover.jpg',
+    fit: ImageFit::Cover,
+    opacity: 0.6,
+    tint: '#000000',
+));
+```
+
+`ImageFit` cases: `Cover` (default) · `Contain` · `Stretch` · `Tile`.
+
+`opacity` is a float between `0.0` and `1.0` (default `1.0`). When `opacity < 1.0`, the canvas is filled with `tint` first so the tint color shows through the partially-transparent image — use it to darken or wash the background. `tint` defaults to `#000000`.
+
+See all three modes interactively in the playground (next section).
 
 ## Start a Local Server to Show the Image
 
-There is a `playground.php` file in `examples` folder. Start a local server to open an interactive form where you can edit the title, description, colors, font, and font size, then see the rendered image update below.
+There is a `playground.php` file in `examples` folder. Start a local server to open an interactive form where you can edit the title, description, font, and font size, switch between **Solid / Gradient / Image** backgrounds, preview gradients live via CSS, and tweak image opacity and tint with sliders.
 
 ```bash
 php -S localhost:8000 examples/playground.php

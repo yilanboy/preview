@@ -6,6 +6,7 @@ use Yilanboy\Preview\Image\Background\Gradient;
 use Yilanboy\Preview\Image\Background\Image as ImageBackground;
 use Yilanboy\Preview\Image\Background\Solid;
 use Yilanboy\Preview\Image\Builder;
+use Yilanboy\Preview\Image\Enums\Alignment;
 use Yilanboy\Preview\Image\Enums\Font;
 use Yilanboy\Preview\Image\Enums\FontSize;
 use Yilanboy\Preview\Image\Enums\GradientDirection;
@@ -20,6 +21,21 @@ const DEFAULT_BG_COLOR = '#777bb3';
 const DEFAULT_GRADIENT_FROM = '#10b981';
 const DEFAULT_GRADIENT_TO = '#3b82f6';
 
+/**
+ * Resolve an Alignment by case name. `Alignment` is not a backed enum, so we
+ * can't use `tryFrom`; mirror the same lookup pattern the playground already
+ * uses for ImageFit / GradientDirection.
+ */
+function resolveAlignment(mixed $value, Alignment $default = Alignment::Left): Alignment
+{
+    return match ((string) $value) {
+        'Left' => Alignment::Left,
+        'Center' => Alignment::Center,
+        'Right' => Alignment::Right,
+        default => $default,
+    };
+}
+
 $titleData = is_array($_POST['title'] ?? null) ? $_POST['title'] : [];
 $descriptionData = is_array($_POST['description'] ?? null) ? $_POST['description'] : [];
 $backgroundData = is_array($_POST['background'] ?? null) ? $_POST['background'] : [];
@@ -28,11 +44,13 @@ $titleText = (string) ($titleData['text'] ?? DEFAULT_TITLE_TEXT);
 $titleColor = ((string) ($titleData['color'] ?? '')) ?: DEFAULT_TITLE_COLOR;
 $titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::NotoSansTC;
 $titleSize = FontSize::tryFrom((int) ($titleData['fontSize'] ?? 0)) ?? FontSize::Large;
+$titleAlignment = resolveAlignment($titleData['alignment'] ?? null);
 
 $descriptionText = (string) ($descriptionData['text'] ?? DEFAULT_DESC_TEXT);
 $descriptionColor = ((string) ($descriptionData['color'] ?? '')) ?: DEFAULT_DESC_COLOR;
 $descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? Font::NotoSansTC;
 $descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Medium;
+$descriptionAlignment = resolveAlignment($descriptionData['alignment'] ?? null);
 
 // Background dispatch. The discriminator $_POST['background'][type] is one of:
 //   'solid'    -> background[solid][color]
@@ -102,6 +120,7 @@ if ($titleText !== '') {
         color: $titleColor,
         fontSize: $titleSize,
         font: $titleFont,
+        alignment: $titleAlignment,
     ));
 }
 
@@ -111,6 +130,7 @@ if ($descriptionText !== '') {
         color: $descriptionColor,
         fontSize: $descriptionSize,
         font: $descriptionFont,
+        alignment: $descriptionAlignment,
     ));
 }
 
@@ -119,6 +139,35 @@ $builder->save($tmpFile);
 $imageBytes = file_get_contents($tmpFile);
 unlink($tmpFile);
 $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $imageBytes : '');
+
+/**
+ * Render a segmented alignment selector (Left / Center / Right) using radio
+ * inputs styled as toggle buttons. Used for both title and description.
+ */
+function renderAlignmentSelector(string $name, Alignment $selected): void
+{
+    $options = [
+        'Left' => ['glyph' => "\u{2630}", 'label' => 'Align left', 'case' => Alignment::Left],
+        'Center' => ['glyph' => "\u{2261}", 'label' => 'Align center', 'case' => Alignment::Center],
+        'Right' => ['glyph' => "\u{2630}", 'label' => 'Align right', 'case' => Alignment::Right],
+    ];
+    ?>
+    <span class="align-group" role="radiogroup" aria-label="Alignment">
+        <?php foreach ($options as $value => $meta) { ?>
+            <label class="align-option align-option--<?= strtolower($value) ?>" title="<?= $meta['label'] ?>">
+                <input
+                    type="radio"
+                    name="<?= htmlspecialchars($name) ?>"
+                    value="<?= $value ?>"
+                    <?= $meta['case'] === $selected ? 'checked' : '' ?>
+                >
+                <span aria-hidden="true"><?= $meta['glyph'] ?></span>
+                <span class="visually-hidden"><?= $meta['label'] ?></span>
+            </label>
+        <?php } ?>
+    </span>
+    <?php
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -138,11 +187,17 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
         textarea { resize: vertical; min-height: 4rem; }
         .row { display: flex; gap: 1rem; flex-wrap: wrap; }
         .row > label { flex: 1; min-width: 7rem; }
+        .row > label.align-label { flex: 0 1 auto; min-width: 0; }
         .color-input { display: flex; align-items: stretch; border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; }
         .color-input:focus-within { outline: 2px solid #777bb3; outline-offset: -1px; border-color: transparent; }
-        .color-swatch { width: 2rem; flex-shrink: 0; background: #ccc; border-right: 1px solid #d1d5db; }
-        .color-input input { border: 0; border-radius: 0; flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .color-swatch { width: 2rem; flex-shrink: 0; background: #ccc; border-right: 1px solid #d1d5db; cursor: pointer; padding: 0; border-top: 0; border-bottom: 0; border-left: 0; }
+        .color-swatch:focus-visible { outline: 2px solid #777bb3; outline-offset: -2px; }
+        .color-swatch[hidden] { display: none; }
+        .color-input input[type="text"], .color-input input:not([type]) { border: 0; border-radius: 0; flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
         .color-input input:focus { outline: 0; }
+        .color-input.is-invalid .color-swatch { opacity: 0.4; }
+        .color-picker-native { position: absolute; width: 0; height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+        .color-hint { font-size: 0.75rem; color: #6b7280; }
         button { padding: 0.625rem 1.25rem; font: inherit; background: #777bb3; color: #fff; border: 0; border-radius: 6px; cursor: pointer; width: fit-content; }
         button:hover { background: #65689c; }
         img { max-width: 100%; border: 1px solid #e5e7eb; border-radius: 6px; display: block; }
@@ -161,6 +216,17 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
         .opacity-control input[type="range"] { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; accent-color: #777bb3; }
         .opacity-control input[type="range"]:focus { outline: 0; }
         .opacity-readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; color: #4b5563; min-width: 2.5rem; text-align: right; }
+        .align-group { display: inline-flex; padding: 0.125rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; align-self: flex-start; }
+        .align-group:focus-within { outline: 2px solid #777bb3; outline-offset: 1px; }
+        .align-option { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0.375rem 0.625rem; border-radius: 4px; color: #6b7280; user-select: none; line-height: 1; transition: background 120ms ease, color 120ms ease; }
+        .align-option:hover { color: #1f2937; }
+        .align-option input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+        .align-option > span[aria-hidden="true"] { font-size: 0.9rem; display: inline-block; }
+        .align-option--left > span[aria-hidden="true"] { text-align: left; width: 1rem; }
+        .align-option--center > span[aria-hidden="true"] { text-align: center; width: 1rem; }
+        .align-option--right > span[aria-hidden="true"] { text-align: right; width: 1rem; }
+        .align-option:has(input[type="radio"]:checked) { background: #fff; color: #1f2937; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
         .error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.875rem; }
     </style>
 </head>
@@ -184,9 +250,10 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
 
             <div class="bg-mode <?= $backgroundType === 'solid' ? 'is-active' : '' ?>" data-bg-panel="solid">
                 <label>
-                    Color
+                    Color <span class="color-hint">(hex like <code>#777bb3</code> or a name: red, green, blue, yellow, orange, white, black)</span>
                     <span class="color-input">
-                        <span class="color-swatch" style="background: <?= htmlspecialchars($solidColor) ?>"></span>
+                        <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($solidColor) ?>" aria-label="Open color picker"></button>
+                        <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                         <input name="background[solid][color]" value="<?= htmlspecialchars($solidColor) ?>" autocomplete="off">
                     </span>
                 </label>
@@ -197,14 +264,16 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                     <label>
                         From
                         <span class="color-input">
-                            <span class="color-swatch" style="background: <?= htmlspecialchars($gradientFrom) ?>"></span>
+                            <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($gradientFrom) ?>" aria-label="Open color picker"></button>
+                            <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                             <input name="background[gradient][from]" value="<?= htmlspecialchars($gradientFrom) ?>" autocomplete="off" data-gradient="from">
                         </span>
                     </label>
                     <label>
                         To
                         <span class="color-input">
-                            <span class="color-swatch" style="background: <?= htmlspecialchars($gradientTo) ?>"></span>
+                            <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($gradientTo) ?>" aria-label="Open color picker"></button>
+                            <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                             <input name="background[gradient][to]" value="<?= htmlspecialchars($gradientTo) ?>" autocomplete="off" data-gradient="to">
                         </span>
                     </label>
@@ -251,7 +320,8 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                     <label>
                         Tint
                         <span class="color-input">
-                            <span class="color-swatch" style="background: <?= htmlspecialchars($imageTint) ?>"></span>
+                            <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($imageTint) ?>" aria-label="Open color picker"></button>
+                            <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                             <input name="background[image][tint]" value="<?= htmlspecialchars($imageTint) ?>" autocomplete="off">
                         </span>
                     </label>
@@ -269,7 +339,8 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                 <label>
                     Color
                     <span class="color-input">
-                        <span class="color-swatch" style="background: <?= htmlspecialchars($titleColor) ?>"></span>
+                        <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($titleColor) ?>" aria-label="Open color picker"></button>
+                        <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                         <input name="title[color]" value="<?= htmlspecialchars($titleColor) ?>" autocomplete="off">
                     </span>
                 </label>
@@ -293,6 +364,10 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                         <?php } ?>
                     </select>
                 </label>
+                <label class="align-label">
+                    Alignment
+                    <?php renderAlignmentSelector('title[alignment]', $titleAlignment); ?>
+                </label>
             </div>
         </fieldset>
 
@@ -306,7 +381,8 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                 <label>
                     Color
                     <span class="color-input">
-                        <span class="color-swatch" style="background: <?= htmlspecialchars($descriptionColor) ?>"></span>
+                        <button type="button" class="color-swatch" style="background: <?= htmlspecialchars($descriptionColor) ?>" aria-label="Open color picker"></button>
+                        <input type="color" class="color-picker-native" tabindex="-1" aria-hidden="true">
                         <input name="description[color]" value="<?= htmlspecialchars($descriptionColor) ?>" autocomplete="off">
                     </span>
                 </label>
@@ -329,6 +405,10 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
                             </option>
                         <?php } ?>
                     </select>
+                </label>
+                <label class="align-label">
+                    Alignment
+                    <?php renderAlignmentSelector('description[alignment]', $descriptionAlignment); ?>
                 </label>
             </div>
         </fieldset>
@@ -354,14 +434,50 @@ $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $
             return null;
         }
 
-        // Color swatches next to every color input.
+        // Color swatches next to every color input. The swatch doubles as a
+        // launcher for the native OS color picker: clicking it opens a hidden
+        // <input type="color"> whose value writes back to the text input. The
+        // text input still accepts hex or one of the 7 named colors directly.
         document.querySelectorAll('.color-input').forEach(function (wrapper) {
-            const input = wrapper.querySelector('input');
+            const textInput = wrapper.querySelector('input:not([type="color"])');
             const swatch = wrapper.querySelector('.color-swatch');
-            input.addEventListener('input', function () {
-                const color = normalizeColor(input.value);
-                if (color !== null) swatch.style.background = color;
+            const picker = wrapper.querySelector('input[type="color"]');
+            if (textInput === null || swatch === null) return;
+
+            function paint(value, markInvalid) {
+                const color = normalizeColor(value);
+                if (color !== null) {
+                    swatch.style.background = color;
+                    wrapper.classList.remove('is-invalid');
+                    if (picker !== null) picker.value = color;
+                } else if (markInvalid) {
+                    wrapper.classList.add('is-invalid');
+                }
+            }
+
+            // Initialize the hidden picker so it opens on the current color.
+            if (picker !== null) {
+                const initial = normalizeColor(textInput.value);
+                if (initial !== null) picker.value = initial;
+            }
+
+            textInput.addEventListener('input', function () {
+                paint(textInput.value, true);
             });
+
+            if (picker !== null) {
+                swatch.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    picker.click();
+                });
+                picker.addEventListener('input', function () {
+                    textInput.value = picker.value;
+                    paint(picker.value, false);
+                    // Some downstream listeners (e.g., the gradient preview)
+                    // are wired to the text input's `input` event.
+                    textInput.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            }
         });
 
         // Opacity slider readout: show the current 0.00 – 1.00 value next to the
