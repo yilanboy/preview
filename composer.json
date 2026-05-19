@@ -10,7 +10,12 @@
         }
     ],
     "scripts": {
-        "run-tests": "./vendor/bin/pest"
+        "tests": "./vendor/bin/pest",
+        "fmt": "vendor/bin/pint --dirty --parallel",
+        "check": [
+            "vendor/bin/pint --dirty --test",
+            "vendor/bin/phpstan analyse"
+        ]
     },
     "keywords": [
         "preview",
@@ -21,7 +26,9 @@
         "ext-gd": "*"
     },
     "require-dev": {
-        "pestphp/pest": "^4.0.0"
+        "pestphp/pest": "^4.0.0",
+        "laravel/pint": "^1.29",
+        "phpstan/phpstan": "^2.1"
     },
     "config": {
         "allow-plugins": {

@@ -47,6 +47,12 @@ jobs:
       - name: Install composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
+      - name: Check code style with Pint
+        run: vendor/bin/pint --test
+
+      - name: Run PHPStan static analysis
+        run: vendor/bin/phpstan analyse --no-progress
+
       - name: Test with pest
         run: vendor/bin/pest --coverage-clover ./coverage.xml
 

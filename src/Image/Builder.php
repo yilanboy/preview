@@ -5,172 +5,169 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Image;
 
 use GdImage;
+use InvalidArgumentException;
+use RuntimeException;
 use Yilanboy\Preview\Color\Converter;
+use Yilanboy\Preview\Image\Enums\Alignment;
+use Yilanboy\Preview\Image\Enums\Position;
 
 final class Builder
 {
-    private const string DEFAULT_FONT_PATH = __DIR__.'/../../fonts/noto-sans-tc.ttf';
-
     private const float MARGIN_RATIO = 0.05;
 
-    public int $width = 1200;
+    private int $width = 1200;
 
-    public int $height = 600;
+    private int $height = 600;
 
-    public array $header = [
-        'text'      => '',
-        'font_path' => self::DEFAULT_FONT_PATH,
-        'font_size' => 50,
-        'color'     => '#030712',
-    ];
+    private string $backgroundColor = '#f9fafb';
 
-    public array $title = [
-        'text'      => '',
-        'font_path' => self::DEFAULT_FONT_PATH,
-        'font_size' => 50,
-        'color'     => '#030712',
-    ];
+    private ?TextBlock $title = null;
 
-    public string $backgroundColor = '#f9fafb';
-
-    public GdImage $image;
+    private ?TextBlock $description = null;
 
     public function __construct(
-        public Converter $converter = new Converter(),
-        public Writer $writer = new Writer()
-    ) {
-    }
+        private readonly Converter $converter = new Converter,
+        private readonly Writer $writer = new Writer,
+    ) {}
 
-    public function size(int $width, int $height): Builder
+    public function size(int $width, int $height): self
     {
+        if ($width <= 0 || $height <= 0) {
+            throw new InvalidArgumentException('Width and height must be positive');
+        }
+
         $this->width = $width;
         $this->height = $height;
 
         return $this;
     }
 
-    public function backgroundColor(string $color): Builder
+    public function backgroundColor(string $color): self
     {
         $this->backgroundColor = $this->converter->toHex($color);
 
         return $this;
     }
 
-    public function title(
-        string $text,
-        ?string $color = null,
-        ?int $fontSize = null,
-        ?string $fontPath = null,
-    ): Builder {
-        $this->updateTextBlock($this->title, $text, $color, $fontSize, $fontPath);
+    public function title(TextBlock $block): self
+    {
+        $this->title = $block;
 
         return $this;
     }
 
-    public function header(
-        string $text,
-        ?string $color = null,
-        ?int $fontSize = null,
-        ?string $fontPath = null,
-    ): Builder {
-        $this->updateTextBlock($this->header, $text, $color, $fontSize, $fontPath);
+    public function description(TextBlock $block): self
+    {
+        $this->description = $block;
 
         return $this;
-    }
-
-    private function updateTextBlock(
-        array &$block,
-        string $text,
-        ?string $color,
-        ?int $fontSize,
-        ?string $fontPath,
-    ): void {
-        $block['text'] = $text;
-
-        if ($color !== null) {
-            $block['color'] = $this->converter->toHex($color);
-        }
-
-        if ($fontSize !== null) {
-            $block['font_size'] = $fontSize;
-        }
-
-        if ($fontPath !== null) {
-            $block['font_path'] = $fontPath;
-        }
-    }
-
-    private function configureCanvas(): void
-    {
-        $this->image = imagecreatetruecolor($this->width, $this->height);
-        imagefill($this->image, 0, 0, $this->allocateColor($this->backgroundColor));
-    }
-
-    /**
-     * @param  callable(array, int): int  $resolveY  receives the wrapped-text bbox and pixel height; returns the y baseline.
-     */
-    private function drawTextBlock(array $block, callable $resolveY): void
-    {
-        if ($block['text'] === '') {
-            return;
-        }
-
-        $wrappedText = $this->writer->wrapTextImage(
-            text: $block['text'],
-            fontSize: $block['font_size'],
-            fontPath: $block['font_path'],
-            maxWidth: intval($this->width - $this->width * self::MARGIN_RATIO * 2)
-        );
-
-        $bbox = imagettfbbox(
-            $block['font_size'], 0, $block['font_path'], $wrappedText);
-
-        $textHeight = $bbox[1] - $bbox[5];
-
-        imagettftext(
-            image: $this->image,
-            size: $block['font_size'],
-            angle: 0,
-            x: intval($this->width * self::MARGIN_RATIO),
-            y: $resolveY($bbox, $textHeight),
-            color: $this->allocateColor($block['color']),
-            font_filename: $block['font_path'],
-            text: $wrappedText
-        );
-    }
-
-    private function allocateColor(string $hex): int
-    {
-        return imagecolorallocate($this->image, ...$this->converter->hexToRgb($hex));
-    }
-
-    private function render(): void
-    {
-        $this->configureCanvas();
-
-        $this->drawTextBlock(
-            $this->header,
-            fn(array $bbox, int $textHeight): int => intval(imagesy($this->image) / 3 - $textHeight / 2),
-        );
-
-        $this->drawTextBlock(
-            $this->title,
-            fn(array $bbox, int $textHeight): int => intval((imagesy($this->image) - $textHeight) / 2 - $bbox[5]),
-        );
     }
 
     public function output(): void
     {
-        $this->render();
+        $image = $this->render();
 
         header('Content-Type: image/png');
-        imagepng($this->image);
+        imagepng($image);
     }
 
     public function save(string $path): void
     {
-        $this->render();
+        $image = $this->render();
 
-        imagepng($this->image, $path);
+        imagepng($image, $path);
+    }
+
+    private function render(): GdImage
+    {
+        if ($this->width < 1 || $this->height < 1) {
+            throw new RuntimeException('Width and height must be at least 1');
+        }
+
+        $image = imagecreatetruecolor($this->width, $this->height);
+
+        if ($image === false) {
+            throw new RuntimeException('Failed to create image canvas');
+        }
+
+        imagefill($image, 0, 0, $this->allocateColor($image, $this->backgroundColor));
+
+        if ($this->title !== null) {
+            $this->drawTextBlock($image, $this->title, Position::Top);
+        }
+
+        if ($this->description !== null) {
+            $this->drawTextBlock($image, $this->description, Position::Center);
+        }
+
+        return $image;
+    }
+
+    private function drawTextBlock(GdImage $image, TextBlock $block, Position $position): void
+    {
+        $fontPath = $block->font->path();
+        $fontSize = $block->fontSize->value;
+        $maxWidth = intval($this->width - $this->width * self::MARGIN_RATIO * 2);
+
+        $wrappedText = $this->writer->wrapTextImage(
+            text: $block->text,
+            fontSize: $fontSize,
+            fontPath: $fontPath,
+            maxWidth: $maxWidth,
+        );
+
+        $bbox = imagettfbbox($fontSize, 0, $fontPath, $wrappedText);
+
+        if ($bbox === false) {
+            throw new RuntimeException('Failed to calculate text bounding box');
+        }
+
+        $textHeight = $bbox[1] - $bbox[5];
+        $textWidth = $bbox[2] - $bbox[0];
+
+        imagettftext(
+            image: $image,
+            size: $fontSize,
+            angle: 0,
+            x: $this->resolveX($block->alignment, $textWidth),
+            y: $this->resolveY($position, $textHeight, $bbox),
+            color: $this->allocateColor($image, $this->converter->toHex($block->color)),
+            font_filename: $fontPath,
+            text: $wrappedText,
+        );
+    }
+
+    private function resolveX(Alignment $alignment, int $textWidth): int
+    {
+        $margin = intval($this->width * self::MARGIN_RATIO);
+
+        return match ($alignment) {
+            Alignment::Left => $margin,
+            Alignment::Center => intval(($this->width - $textWidth) / 2),
+            Alignment::Right => $this->width - $textWidth - $margin,
+        };
+    }
+
+    /**
+     * @param  array<int, int>  $bbox
+     */
+    private function resolveY(Position $position, int $textHeight, array $bbox): int
+    {
+        return match ($position) {
+            Position::Top => intval($this->height / 3 - $textHeight / 2),
+            Position::Center => intval(($this->height - $textHeight) / 2 - $bbox[5]),
+            Position::Bottom => intval(2 * $this->height / 3 - ($bbox[1] + $bbox[5]) / 2),
+        };
+    }
+
+    private function allocateColor(GdImage $image, string $hex): int
+    {
+        $color = imagecolorallocate($image, ...$this->converter->hexToRgb($hex));
+
+        if ($color === false) {
+            throw new RuntimeException('Failed to allocate color');
+        }
+
+        return $color;
     }
 }

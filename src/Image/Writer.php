@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Image;
 
+use RuntimeException;
+
 final class Writer
 {
     /**
@@ -13,7 +15,7 @@ final class Writer
      *
      * @return array<string>
      */
-    public static function splitStringToArray($input): array
+    public function splitStringToArray(string $input): array
     {
         preg_match_all('/\p{Han}|[a-zA-Z0-9]+|\s|[^\p{Han}\s\w]/u', $input, $matches);
 
@@ -23,17 +25,21 @@ final class Writer
     /**
      * Calculate the width of the text image.
      */
-    public static function calculateTextImageWidth(
+    public function calculateTextImageWidth(
         string $text,
         int $fontSize,
-        string $fontPath
+        string $fontPath,
     ): int {
         $bbox = imagettfbbox(
             size: $fontSize,
             angle: 0,
             font_filename: $fontPath,
-            string: $text
+            string: $text,
         );
+
+        if ($bbox === false) {
+            throw new RuntimeException('Failed to calculate text bounding box');
+        }
 
         return $bbox[2] - $bbox[0];
     }
@@ -45,7 +51,7 @@ final class Writer
         string $text,
         int $fontSize,
         string $fontPath,
-        int $maxWidth
+        int $maxWidth,
     ): string {
         $wrapText = '';
         $words = $this->splitStringToArray($text);
@@ -57,6 +63,7 @@ final class Writer
 
             if ($this->calculateTextImageWidth($proposedText, $fontSize, $fontPath) < $maxWidth) {
                 $wrapText .= $currentWord;
+
                 continue;
             }
 

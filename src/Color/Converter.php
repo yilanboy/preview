@@ -11,13 +11,15 @@ final class Converter
     /**
      * Check the string is a color hex format
      */
-    public function isHexColor(string $color): bool|int
+    public function isHexColor(string $color): bool
     {
-        return preg_match('/^#[a-f0-9]{6}$/i', $color);
+        return preg_match('/^#[a-f0-9]{6}$/i', $color) === 1;
     }
 
     /**
      * Convert color hex code to RGB
+     *
+     * @return array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}
      */
     public function hexToRgb(string $hex): array
     {
@@ -25,7 +27,10 @@ final class Converter
             throw new InvalidArgumentException('Invalid hex color');
         }
 
-        return sscanf($hex, '#%02x%02x%02x');
+        /** @var array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>} $rgb */
+        $rgb = sscanf($hex, '#%02x%02x%02x');
+
+        return $rgb;
     }
 
     /**

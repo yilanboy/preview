@@ -24,10 +24,6 @@
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
-
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -52,6 +48,10 @@ function imagesMatch(
     // regions where most differing pixels have differing neighbors.
     $actual = imagecreatefrompng($actualPath);
     $expected = imagecreatefrompng($fixturePath);
+
+    if ($actual === false || $expected === false) {
+        return false;
+    }
 
     if (imagesx($actual) !== imagesx($expected) || imagesy($actual) !== imagesy($expected)) {
         return false;
@@ -89,7 +89,7 @@ function imagesMatch(
                 continue;
             }
             $n = $mask[$row - $width + $x - 1] + $mask[$row - $width + $x] + $mask[$row - $width + $x + 1]
-               + $mask[$row + $x - 1]                                     + $mask[$row + $x + 1]
+               + $mask[$row + $x - 1] + $mask[$row + $x + 1]
                + $mask[$row + $width + $x - 1] + $mask[$row + $width + $x] + $mask[$row + $width + $x + 1];
             if ($n >= $minClusterNeighbors) {
                 $clustered++;
