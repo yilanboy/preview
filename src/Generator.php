@@ -22,17 +22,15 @@ final class Generator
 
     private int $height = 600;
 
-    private Background $background;
-
     private ?TextBlock $title = null;
 
     private ?TextBlock $description = null;
 
     public function __construct(
+        private Background $background = new Solid(color: '#f9fafb'),
         private readonly ColorConverter $converter = new ColorConverter(),
         private readonly Writer $writer = new Writer(),
     ) {
-        $this->background = new Solid('#f9fafb');
     }
 
     public function size(int $width, int $height): self
