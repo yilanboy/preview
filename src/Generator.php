@@ -54,11 +54,6 @@ final class Generator
         return $this;
     }
 
-    public function backgroundColor(string $color): self
-    {
-        return $this->background(new Solid($color));
-    }
-
     public function title(TextBlock $block): self
     {
         $this->title = $block;

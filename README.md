@@ -13,11 +13,14 @@ composer require yilanboy/preview
 Then create an image builder.
 
 ```php
-use Yilanboy\Preview\Generator;use Yilanboy\Preview\Text\Enums\FontSize;use Yilanboy\Preview\Text\TextBlock;
+use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\TextBlock;
 
 new Generator
     ->size(width: 1200, height: 600)
-    ->backgroundColor('#777bb3')
+    ->background(new Solid('#777bb3'))
     ->title(new TextBlock(
         text: 'Preview',
         color: 'white',
@@ -43,7 +46,7 @@ $red  = $base->withColor('red');
 $big  = $base->withFontSize(FontSize::Huge);
 ```
 
-Available customization enums live under `Yilanboy\Preview\Image\Enums`:
+Available customization enums live under `Yilanboy\Preview\Canvas\Enums`:
 
 | Enum        | Cases                                                                                              |
 |-------------|----------------------------------------------------------------------------------------------------|
@@ -61,10 +64,10 @@ the other three are Latin-only.
 `Builder::background()` accepts anything implementing the `Background` interface. Three implementations ship with the
 package.
 
-**Solid** — a flat color. `backgroundColor('#hex')` is a shortcut for this.
+**Solid** — a flat color.
 
 ```php
-use Yilanboy\Preview\Image\Background\Solid;
+use Yilanboy\Preview\Canvas\Background\Solid;
 
 $generator->background(new Solid('#777bb3'));
 ```
@@ -72,8 +75,8 @@ $generator->background(new Solid('#777bb3'));
 **Gradient** — two colors interpolated across the canvas.
 
 ```php
-use Yilanboy\Preview\Image\Background\Gradient;
-use Yilanboy\Preview\Image\Enums\GradientDirection;
+use Yilanboy\Preview\Canvas\Background\Gradient;
+use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 
 $generator->background(new Gradient(
     from: '#1e3a8a',
@@ -87,8 +90,8 @@ $generator->background(new Gradient(
 **Image** — render a bitmap behind your text.
 
 ```php
-use Yilanboy\Preview\Image\Background\Image;
-use Yilanboy\Preview\Image\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Background\Image;
+use Yilanboy\Preview\Canvas\Enums\ImageFit;
 
 $generator->background(new Image(
     path: __DIR__.'/cover.jpg',

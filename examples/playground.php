@@ -4,6 +4,7 @@ include_once __DIR__.'/../vendor/autoload.php';
 
 use Yilanboy\Preview\Canvas\Background\Gradient;
 use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
+use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\Generator;
@@ -123,11 +124,11 @@ try {
             opacity: $imageOpacity,
             tint: $imageTint,
         )),
-        default => $builder->backgroundColor($solidColor),
+        default => $builder->background(new Solid($solidColor)),
     };
 } catch (InvalidArgumentException $e) {
     $backgroundError = $e->getMessage();
-    $builder->backgroundColor($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR);
+    $builder->background(new Solid($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR));
 }
 
 if ($titleText !== '') {

@@ -2,6 +2,7 @@
 
 use Yilanboy\Preview\Canvas\Background\Gradient;
 use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
+use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\Generator;
@@ -14,7 +15,7 @@ it('can save png image', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
         ->save($filename);
 
@@ -28,7 +29,7 @@ it('matches snapshot', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog'))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
         ->save($actual);
@@ -48,7 +49,7 @@ it('fails snapshot when title color changes', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog', color: 'red'))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
         ->save($actual);
@@ -64,7 +65,7 @@ it('fails snapshot when description color changes', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog'))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'red'))
         ->save($actual);
@@ -80,7 +81,7 @@ it('fails snapshot when background color changes', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('red')
+        ->background(new Solid('red'))
         ->title(new TextBlock(text: 'My Blog'))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
         ->save($actual);
@@ -210,7 +211,7 @@ it('matches inter-font snapshot', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog', font: Font::Inter))
         ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white', font: Font::Inter))
         ->save($actual);
@@ -232,7 +233,7 @@ it('matches chinese-text snapshot', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: '我的部落格'))
         ->description(new TextBlock(text: '真正的大師，永遠懷著一顆學徒的心', color: 'white'))
         ->save($actual);
@@ -252,7 +253,7 @@ it('matches centered-text snapshot', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog', alignment: Alignment::Center))
         ->description(new TextBlock(
             text: 'A true master is an eternal student',
@@ -276,7 +277,7 @@ it('matches long-wrapping-text snapshot', function () {
 
     new Generator()
         ->size(width: 1200, height: 600)
-        ->backgroundColor('#10b981')
+        ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: 'My Blog'))
         ->description(new TextBlock(
             text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm and a stitch in time saves nine',
