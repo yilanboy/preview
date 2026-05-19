@@ -109,30 +109,30 @@ $imageTint = ((string) ($imageData['tint'] ?? '')) ?: '#000000';
 
 $backgroundError = null;
 
-$builder = new Generator()->size(width: 1200, height: 600);
+$generator = new Generator()->size(width: 1200, height: 600);
 
 try {
     match ($backgroundType) {
-        'gradient' => $builder->background(new Gradient(
+        'gradient' => $generator->background(new Gradient(
             from: $gradientFrom,
             to: $gradientTo,
             direction: $gradientDirection,
         )),
-        'image' => $builder->background(new ImageBackground(
+        'image' => $generator->background(new ImageBackground(
             path: $imagePath,
             fit: $imageFit,
             opacity: $imageOpacity,
             tint: $imageTint,
         )),
-        default => $builder->background(new Solid($solidColor)),
+        default => $generator->background(new Solid($solidColor)),
     };
 } catch (InvalidArgumentException $e) {
     $backgroundError = $e->getMessage();
-    $builder->background(new Solid($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR));
+    $generator->background(new Solid($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR));
 }
 
 if ($titleText !== '') {
-    $builder->title(new TextBlock(
+    $generator->title(new TextBlock(
         text: $titleText,
         color: $titleColor,
         fontSize: $titleSize,
@@ -143,7 +143,7 @@ if ($titleText !== '') {
 }
 
 if ($descriptionText !== '') {
-    $builder->description(new TextBlock(
+    $generator->description(new TextBlock(
         text: $descriptionText,
         color: $descriptionColor,
         fontSize: $descriptionSize,
@@ -154,7 +154,7 @@ if ($descriptionText !== '') {
 }
 
 $tmpFile = tempnam(sys_get_temp_dir(), 'preview_').'.png';
-$builder->save($tmpFile);
+$generator->save($tmpFile);
 $imageBytes = file_get_contents($tmpFile);
 unlink($tmpFile);
 $imageDataUri = 'data:image/png;base64,'.base64_encode($imageBytes !== false ? $imageBytes : '');

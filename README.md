@@ -10,7 +10,7 @@ Install the package with composer.
 composer require yilanboy/preview
 ```
 
-Then create an image builder.
+Then create an image generator.
 
 ```php
 use Yilanboy\Preview\Canvas\Background\Solid;
@@ -61,7 +61,7 @@ the other three are Latin-only.
 
 ## Backgrounds
 
-`Builder::background()` accepts anything implementing the `Background` interface. Three implementations ship with the
+`Generator::background()` accepts anything implementing the `Background` interface. Three implementations ship with the
 package.
 
 **Solid** — a flat color.
