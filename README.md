@@ -14,12 +14,13 @@ Then create an image generator.
 
 ```php
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\FontSize;
 use Yilanboy\Preview\Text\TextBlock;
 
 new Generator
-    ->size(width: 1200, height: 600)
+    ->size(Size::OpenGraph)
     ->background(new Solid('#777bb3'))
     ->title(new TextBlock(
         text: 'Preview',
@@ -58,6 +59,21 @@ All four bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSans
 the other three are Latin-only.
 
 > Currently, the text only supports English and Chinese.
+
+## Canvas Size
+
+Pick a preset that matches where the image will be embedded. `Generator` defaults to `Size::OpenGraph`.
+
+```php
+use Yilanboy\Preview\Canvas\Enums\Size;
+
+$generator->size(Size::Square);
+```
+
+| Preset      | Dimensions  | Where it's used                       |
+|-------------|-------------|---------------------------------------|
+| `OpenGraph` | 1200 × 630  | Facebook, generic Open Graph previews |
+| `Square`    | 1080 × 1080 | Instagram, LinkedIn square posts      |
 
 ## Backgrounds
 

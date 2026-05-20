@@ -7,6 +7,7 @@ use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
@@ -51,9 +52,18 @@ function resolvePosition(mixed $value, Position $default): Position
     };
 }
 
+$canvasData = is_array($_POST['canvas'] ?? null) ? $_POST['canvas'] : [];
 $titleData = is_array($_POST['title'] ?? null) ? $_POST['title'] : [];
 $descriptionData = is_array($_POST['description'] ?? null) ? $_POST['description'] : [];
 $backgroundData = is_array($_POST['background'] ?? null) ? $_POST['background'] : [];
+
+// Resolve the selected Size preset. Size is not a backed enum, so mirror the
+// case-name lookup used elsewhere in the playground.
+$sizeName = (string) ($canvasData['size'] ?? '');
+$canvasSize = array_find(
+    Size::cases(),
+    fn (Size $case) => $case->name === $sizeName,
+) ?? Size::OpenGraph;
 
 $titleText = (string) ($titleData['text'] ?? DEFAULT_TITLE_TEXT);
 $titleColor = ((string) ($titleData['color'] ?? '')) ?: DEFAULT_TITLE_COLOR;
@@ -105,11 +115,11 @@ $imageFit = match ($imageFitName) {
 $imageOpacityRaw = $imageData['opacity'] ?? null;
 $imageOpacity = $imageOpacityRaw === null || $imageOpacityRaw === '' ? 1.0 : (float) $imageOpacityRaw;
 $imageOpacity = max(0.0, min(1.0, $imageOpacity));
-$imageTint = ((string) ($imageData['tint'] ?? '')) ?: '#000000';
+$imageTint = ((string) ($imageData['tint'] ?? '')) ?: '#ffffff';
 
 $backgroundError = null;
 
-$generator = new Generator()->size(width: 1200, height: 600);
+$generator = new Generator()->size($canvasSize);
 
 try {
     match ($backgroundType) {
@@ -629,6 +639,22 @@ function renderPositionSelector(string $name, Position $selected): void
 <body>
 <h1>Preview Playground</h1>
 <form method="post">
+    <fieldset>
+        <legend>Canvas</legend>
+        <label>
+            Size
+            <select name="canvas[size]">
+                <?php
+                foreach (Size::cases() as $size) { ?>
+                    <option value="<?= $size->name ?>" <?= $size === $canvasSize ? 'selected' : '' ?>>
+                        <?= $size->name ?> (<?= $size->width() ?> × <?= $size->height() ?>)
+                    </option>
+                    <?php
+                } ?>
+            </select>
+        </label>
+    </fieldset>
+
     <fieldset>
         <legend>Background</legend>
         <div class="bg-tabs" role="tablist">

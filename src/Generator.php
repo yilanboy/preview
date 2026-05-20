@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Yilanboy\Preview;
 
 use GdImage;
-use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Background\Background;
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
@@ -18,9 +18,9 @@ final class Generator
 {
     private const float MARGIN_RATIO = 0.05;
 
-    private int $width = 1200;
+    private int $width;
 
-    private int $height = 600;
+    private int $height;
 
     private ?TextBlock $title = null;
 
@@ -30,16 +30,14 @@ final class Generator
         private Background $background = new Solid(color: '#f9fafb'),
         private readonly ColorConverter $converter = new ColorConverter,
         private readonly Writer $writer = new Writer,
-    ) {}
+    ) {
+        $this->size(Size::OpenGraph);
+    }
 
-    public function size(int $width, int $height): self
+    public function size(Size $size): self
     {
-        if ($width <= 0 || $height <= 0) {
-            throw new InvalidArgumentException('Width and height must be positive');
-        }
-
-        $this->width = $width;
-        $this->height = $height;
+        $this->width = $size->width();
+        $this->height = $size->height();
 
         return $this;
     }
@@ -141,7 +139,7 @@ final class Generator
 
     private function resolveX(Alignment $alignment, int $textWidth): int
     {
-        $margin = intval($this->width * self::MARGIN_RATIO);
+        $margin = intval($this->width *  self::MARGIN_RATIO);
 
         return match ($alignment) {
             Alignment::Left => $margin,

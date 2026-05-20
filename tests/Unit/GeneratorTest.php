@@ -1,11 +1,15 @@
 <?php
 
+use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 
-it('throws on non-positive width', function () {
-    new Generator()->size(width: 0, height: 600);
-})->throws(InvalidArgumentException::class);
+it('applies a size preset', function () {
+    $generator = new Generator()->size(Size::Square);
 
-it('throws on non-positive height', function () {
-    new Generator()->size(width: 1200, height: -1);
-})->throws(InvalidArgumentException::class);
+    $reflection = new ReflectionClass($generator);
+    $width = $reflection->getProperty('width')->getValue($generator);
+    $height = $reflection->getProperty('height')->getValue($generator);
+
+    expect($width)->toBe(1080)
+        ->and($height)->toBe(1080);
+});
