@@ -46,31 +46,34 @@ final class Writer
 
     /**
      * Wrap the text to multiple lines based on the maximum width.
+     *
+     * @return array<int, string>
      */
-    public function wrapTextImage(
+    public function wrapText(
         string $text,
         int $fontSize,
         string $fontPath,
         int $maxWidth,
-    ): string {
-        $wrapText = '';
+    ): array {
+        $lines = [];
+        $current = '';
         $words = $this->splitStringToArray($text);
-        $length = count($words);
 
-        for ($i = 0; $i < $length; $i++) {
-            $currentWord = $words[$i];
-            $proposedText = $wrapText.$currentWord;
+        foreach ($words as $word) {
+            $proposed = $current.$word;
 
-            if ($this->calculateTextImageWidth($proposedText, $fontSize, $fontPath) < $maxWidth) {
-                $wrapText .= $currentWord;
+            if ($this->calculateTextImageWidth($proposed, $fontSize, $fontPath) < $maxWidth) {
+                $current = $proposed;
 
                 continue;
             }
 
-            $wrapText = trim($wrapText);
-            $wrapText .= PHP_EOL.$currentWord;
+            $lines[] = trim($current);
+            $current = $word;
         }
 
-        return $wrapText;
+        $lines[] = trim($current);
+
+        return $lines;
     }
 }

@@ -117,32 +117,39 @@ final class Generator
         $fontSize = $block->fontSize->value;
         $maxWidth = $this->width - $this->margin->value * 2;
 
-        $wrappedText = $this->writer->wrapTextImage(
+        $lines = $this->writer->wrapText(
             text: $block->text,
             fontSize: $fontSize,
             fontPath: $fontPath,
             maxWidth: $maxWidth,
         );
 
-        $bbox = imagettfbbox($fontSize, 0, $fontPath, $wrappedText);
+        $metrics = imagettfbbox($fontSize, 0, $fontPath, $lines[0]);
 
-        if ($bbox === false) {
+        if ($metrics === false) {
             throw new RuntimeException('Failed to calculate text bounding box');
         }
 
-        $textHeight = $bbox[1] - $bbox[5];
-        $textWidth = $bbox[2] - $bbox[0];
+        $lineGlyphHeight = $metrics[1] - $metrics[5];
+        $lineSpacing = $fontSize * $block->lineHeight->multiplier();
+        $blockHeight = intval($lineGlyphHeight + (count($lines) - 1) * $lineSpacing);
+        $baselineY = $this->resolveY($position, $blockHeight, $metrics);
+        $color = $this->allocateColor($image, $this->converter->toHex($block->color));
 
-        imagettftext(
-            image: $image,
-            size: $fontSize,
-            angle: 0,
-            x: $this->resolveX($block->alignment, $textWidth),
-            y: $this->resolveY($position, $textHeight, $bbox),
-            color: $this->allocateColor($image, $this->converter->toHex($block->color)),
-            font_filename: $fontPath,
-            text: $wrappedText,
-        );
+        foreach ($lines as $i => $line) {
+            $lineWidth = $this->writer->calculateTextImageWidth($line, $fontSize, $fontPath);
+
+            imagettftext(
+                image: $image,
+                size: $fontSize,
+                angle: 0,
+                x: $this->resolveX($block->alignment, $lineWidth),
+                y: intval($baselineY + $i * $lineSpacing),
+                color: $color,
+                font_filename: $fontPath,
+                text: $line,
+            );
+        }
     }
 
     private function resolveX(Alignment $alignment, int $textWidth): int
@@ -155,14 +162,14 @@ final class Generator
     }
 
     /**
-     * @param  array<int, int>  $bbox
+     * @param  array<int, int>  $metrics
      */
-    private function resolveY(Position $position, int $textHeight, array $bbox): int
+    private function resolveY(Position $position, int $blockHeight, array $metrics): int
     {
         return match ($position) {
-            Position::Top => intval($this->height / 3 - $textHeight / 2),
-            Position::Center => intval(($this->height - $textHeight) / 2 - $bbox[5]),
-            Position::Bottom => intval(2 * $this->height / 3 - ($bbox[1] + $bbox[5]) / 2),
+            Position::Top => intval($this->height / 3 - $blockHeight / 2),
+            Position::Center => intval(($this->height - $blockHeight) / 2 - $metrics[5]),
+            Position::Bottom => intval(2 * $this->height / 3 - $blockHeight / 2 - $metrics[5]),
         };
     }
 

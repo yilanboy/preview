@@ -49,13 +49,14 @@ $red  = $base->withColor('red');
 $big  = $base->withFontSize(FontSize::Huge);
 ```
 
-Available customization enums live under `Yilanboy\Preview\Canvas\Enums`:
+Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 
-| Enum        | Cases                                                                                              |
-|-------------|----------------------------------------------------------------------------------------------------|
-| `Font`      | `NotoSansTC` · `NotoSans` · `Inter` · `Roboto`                                                     |
-| `FontSize`  | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
-| `Alignment` | `Left` · `Center` · `Right`                                                                        |
+| Enum         | Cases                                                                                              |
+|--------------|----------------------------------------------------------------------------------------------------|
+| `Font`       | `NotoSansTC` · `NotoSans` · `Inter` · `Roboto`                                                     |
+| `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
+| `Alignment`  | `Left` · `Center` · `Right`                                                                        |
+| `LineHeight` | `Tight` (1.0) · `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                  |
 
 All four bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese;
 the other three are Latin-only.
@@ -94,6 +95,29 @@ $generator->margin(Margin::Large);
 | `Medium`     | 60     |
 | `Large`      | 90     |
 | `ExtraLarge` | 120    |
+
+## Line Height
+
+When text wraps to multiple lines, `LineHeight` controls the spacing between them. The value is a unit-less multiplier of
+the text's font size (CSS `line-height` semantics). `TextBlock` defaults to `LineHeight::Normal` (1.3×).
+
+```php
+use Yilanboy\Preview\Text\Enums\LineHeight;
+use Yilanboy\Preview\Text\TextBlock;
+
+$generator->description(new TextBlock(
+    text: 'A longer description that wraps to multiple lines for demonstration purposes.',
+    lineHeight: LineHeight::Loose,
+));
+```
+
+| Preset    | Multiplier |
+|-----------|------------|
+| `Tight`   | 1.0×       |
+| `Snug`    | 1.15×      |
+| `Normal`  | 1.3×       |
+| `Relaxed` | 1.5×       |
+| `Loose`   | 1.75×      |
 
 ## Backgrounds
 

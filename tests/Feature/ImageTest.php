@@ -9,6 +9,7 @@ use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\TextBlock;
 
 it('can save png image', function () {
@@ -283,6 +284,30 @@ it('matches long-wrapping-text snapshot', function () {
         ->description(new TextBlock(
             text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm and a stitch in time saves nine',
             color: 'white',
+        ))
+        ->save($actual);
+
+    if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
+        copy($actual, $fixture);
+    }
+
+    expect(imagesMatch($actual, $fixture))->toBeTrue();
+
+    unlink($actual);
+});
+
+it('matches long-wrapping-text-loose snapshot', function () {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+    $fixture = __DIR__.'/../Fixtures/long-wrapping-text-loose.png';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog'))
+        ->description(new TextBlock(
+            text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm and a stitch in time saves nine',
+            color: 'white',
+            lineHeight: LineHeight::Loose,
         ))
         ->save($actual);
 

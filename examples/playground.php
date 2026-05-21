@@ -13,6 +13,7 @@ use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
 
@@ -53,6 +54,18 @@ function resolvePosition(mixed $value, Position $default): Position
     };
 }
 
+/**
+ * Resolve a LineHeight by case name. LineHeight is not a backed enum since
+ * its multipliers are floats; look it up by name like Position/Alignment.
+ */
+function resolveLineHeight(mixed $value, LineHeight $default = LineHeight::Normal): LineHeight
+{
+    return array_find(
+        LineHeight::cases(),
+        fn (LineHeight $case) => $case->name === (string) $value,
+    ) ?? $default;
+}
+
 $canvasData = is_array($_POST['canvas'] ?? null) ? $_POST['canvas'] : [];
 $titleData = is_array($_POST['title'] ?? null) ? $_POST['title'] : [];
 $descriptionData = is_array($_POST['description'] ?? null) ? $_POST['description'] : [];
@@ -74,6 +87,7 @@ $titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::NotoSan
 $titleSize = FontSize::tryFrom((int) ($titleData['fontSize'] ?? 0)) ?? FontSize::Large;
 $titleAlignment = resolveAlignment($titleData['alignment'] ?? null);
 $titlePosition = resolvePosition($titleData['position'] ?? null, Position::Top);
+$titleLineHeight = resolveLineHeight($titleData['lineHeight'] ?? null);
 
 $descriptionText = (string) ($descriptionData['text'] ?? DEFAULT_DESC_TEXT);
 $descriptionColor = ((string) ($descriptionData['color'] ?? '')) ?: DEFAULT_DESC_COLOR;
@@ -81,6 +95,7 @@ $descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? F
 $descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Medium;
 $descriptionAlignment = resolveAlignment($descriptionData['alignment'] ?? null);
 $descriptionPosition = resolvePosition($descriptionData['position'] ?? null, Position::Center);
+$descriptionLineHeight = resolveLineHeight($descriptionData['lineHeight'] ?? null);
 
 // Background dispatch. The discriminator $_POST['background'][type] is one of:
 //   'solid'    -> background[solid][color]
@@ -153,6 +168,7 @@ if ($titleText !== '') {
         fontSize: $titleSize,
         font: $titleFont,
         alignment: $titleAlignment,
+        lineHeight: $titleLineHeight,
         position: $titlePosition,
     ));
 }
@@ -164,6 +180,7 @@ if ($descriptionText !== '') {
         fontSize: $descriptionSize,
         font: $descriptionFont,
         alignment: $descriptionAlignment,
+        lineHeight: $descriptionLineHeight,
         position: $descriptionPosition,
     ));
 }
@@ -852,6 +869,19 @@ function renderPositionSelector(string $name, Position $selected): void
                 <?php
                 renderPositionSelector('title[position]', $titlePosition); ?>
             </label>
+            <label>
+                Line height
+                <select name="title[lineHeight]">
+                    <?php
+                    foreach (LineHeight::cases() as $lineHeight) { ?>
+                        <option
+                            value="<?= $lineHeight->name ?>" <?= $lineHeight === $titleLineHeight ? 'selected' : '' ?>>
+                            <?= $lineHeight->name ?> (<?= $lineHeight->multiplier() ?>×)
+                        </option>
+                        <?php
+                    } ?>
+                </select>
+            </label>
         </div>
     </fieldset>
 
@@ -909,6 +939,19 @@ function renderPositionSelector(string $name, Position $selected): void
                 Position
                 <?php
                 renderPositionSelector('description[position]', $descriptionPosition); ?>
+            </label>
+            <label>
+                Line height
+                <select name="description[lineHeight]">
+                    <?php
+                    foreach (LineHeight::cases() as $lineHeight) { ?>
+                        <option
+                            value="<?= $lineHeight->name ?>" <?= $lineHeight === $descriptionLineHeight ? 'selected' : '' ?>>
+                            <?= $lineHeight->name ?> (<?= $lineHeight->multiplier() ?>×)
+                        </option>
+                        <?php
+                    } ?>
+                </select>
             </label>
         </div>
     </fieldset>
