@@ -7,6 +7,7 @@ use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
@@ -65,6 +66,8 @@ $canvasSize = array_find(
     fn (Size $case) => $case->name === $sizeName,
 ) ?? Size::OpenGraph;
 
+$canvasMargin = Margin::tryFrom((int) ($canvasData['margin'] ?? 0)) ?? Margin::Medium;
+
 $titleText = (string) ($titleData['text'] ?? DEFAULT_TITLE_TEXT);
 $titleColor = ((string) ($titleData['color'] ?? '')) ?: DEFAULT_TITLE_COLOR;
 $titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::NotoSansTC;
@@ -119,7 +122,9 @@ $imageTint = ((string) ($imageData['tint'] ?? '')) ?: '#ffffff';
 
 $backgroundError = null;
 
-$generator = new Generator()->size($canvasSize);
+$generator = new Generator()
+    ->size($canvasSize)
+    ->margin($canvasMargin);
 
 try {
     match ($backgroundType) {
@@ -641,18 +646,32 @@ function renderPositionSelector(string $name, Position $selected): void
 <form method="post">
     <fieldset>
         <legend>Canvas</legend>
-        <label>
-            Size
-            <select name="canvas[size]">
-                <?php
-                foreach (Size::cases() as $size) { ?>
-                    <option value="<?= $size->name ?>" <?= $size === $canvasSize ? 'selected' : '' ?>>
-                        <?= $size->name ?> (<?= $size->width() ?> × <?= $size->height() ?>)
-                    </option>
+        <div class="row">
+            <label>
+                Size
+                <select name="canvas[size]">
                     <?php
-                } ?>
-            </select>
-        </label>
+                    foreach (Size::cases() as $size) { ?>
+                        <option value="<?= $size->name ?>" <?= $size === $canvasSize ? 'selected' : '' ?>>
+                            <?= $size->name ?> (<?= $size->width() ?> × <?= $size->height() ?>)
+                        </option>
+                        <?php
+                    } ?>
+                </select>
+            </label>
+            <label>
+                Margin
+                <select name="canvas[margin]">
+                    <?php
+                    foreach (Margin::cases() as $margin) { ?>
+                        <option value="<?= $margin->value ?>" <?= $margin === $canvasMargin ? 'selected' : '' ?>>
+                            <?= $margin->name ?> (<?= $margin->value ?>px)
+                        </option>
+                        <?php
+                    } ?>
+                </select>
+            </label>
+        </div>
     </fieldset>
 
     <fieldset>

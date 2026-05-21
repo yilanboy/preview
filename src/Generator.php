@@ -8,6 +8,7 @@ use GdImage;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Background\Background;
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Position;
@@ -16,11 +17,11 @@ use Yilanboy\Preview\Text\Writer;
 
 final class Generator
 {
-    private const float MARGIN_RATIO = 0.05;
-
     private int $width;
 
     private int $height;
+
+    private Margin $margin = Margin::Medium;
 
     private ?TextBlock $title = null;
 
@@ -45,6 +46,13 @@ final class Generator
     public function background(Background $background): self
     {
         $this->background = $background;
+
+        return $this;
+    }
+
+    public function margin(Margin $margin): self
+    {
+        $this->margin = $margin;
 
         return $this;
     }
@@ -107,7 +115,7 @@ final class Generator
     {
         $fontPath = $block->font->path();
         $fontSize = $block->fontSize->value;
-        $maxWidth = intval($this->width - $this->width * self::MARGIN_RATIO * 2);
+        $maxWidth = $this->width - $this->margin->value * 2;
 
         $wrappedText = $this->writer->wrapTextImage(
             text: $block->text,
@@ -139,12 +147,10 @@ final class Generator
 
     private function resolveX(Alignment $alignment, int $textWidth): int
     {
-        $margin = intval($this->width *  self::MARGIN_RATIO);
-
         return match ($alignment) {
-            Alignment::Left => $margin,
+            Alignment::Left => $this->margin->value,
             Alignment::Center => intval(($this->width - $textWidth) / 2),
-            Alignment::Right => $this->width - $textWidth - $margin,
+            Alignment::Right => $this->width - $textWidth - $this->margin->value,
         };
     }
 

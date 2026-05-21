@@ -14,6 +14,7 @@ Then create an image generator.
 
 ```php
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\FontSize;
@@ -21,6 +22,7 @@ use Yilanboy\Preview\Text\TextBlock;
 
 new Generator
     ->size(Size::OpenGraph)
+    ->margin(Margin::Medium)
     ->background(new Solid('#777bb3'))
     ->title(new TextBlock(
         text: 'Preview',
@@ -74,6 +76,24 @@ $generator->size(Size::Square);
 |-------------|-------------|---------------------------------------|
 | `OpenGraph` | 1200 × 630  | Facebook, generic Open Graph previews |
 | `Square`    | 1080 × 1080 | Instagram, LinkedIn square posts      |
+
+## Margin
+
+Text is inset from the canvas edges by a fixed pixel margin. `Generator` defaults to `Margin::Medium` (60px).
+
+```php
+use Yilanboy\Preview\Canvas\Enums\Margin;
+
+$generator->margin(Margin::Large);
+```
+
+| Preset       | Pixels |
+|--------------|--------|
+| `None`       | 0      |
+| `Small`      | 30     |
+| `Medium`     | 60     |
+| `Large`      | 90     |
+| `ExtraLarge` | 120    |
 
 ## Backgrounds
 
