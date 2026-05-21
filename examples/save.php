@@ -5,7 +5,9 @@ include_once __DIR__.'/../vendor/autoload.php';
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\TextBlock;
 
 new Generator()
@@ -15,10 +17,13 @@ new Generator()
         text: 'Preview',
         color: 'white',
         fontSize: FontSize::Large,
+        font: Font::Inter,
     ))
     ->description(new TextBlock(
         text: 'A simple PHP package to create preview image',
         color: 'white',
         fontSize: FontSize::Medium,
+        font: Font::Inter,
+        lineHeight: LineHeight::Relaxed,
     ))
     ->save('preview.png');

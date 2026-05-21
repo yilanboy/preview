@@ -17,7 +17,9 @@ use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\TextBlock;
 
 new Generator
@@ -28,11 +30,14 @@ new Generator
         text: 'Preview',
         color: 'white',
         fontSize: FontSize::Large,
+        font: Font::Inter,
     ))
     ->description(new TextBlock(
         text: 'A simple PHP package to create preview image',
         color: 'white',
         fontSize: FontSize::Medium,
+        font: Font::Inter,
+        lineHeight: LineHeight::Relaxed,
     ))
     ->output();
 ```
@@ -98,8 +103,8 @@ $generator->margin(Margin::Large);
 
 ## Line Height
 
-When text wraps to multiple lines, `LineHeight` controls the spacing between them. The value is a unit-less multiplier of
-the text's font size (CSS `line-height` semantics). `TextBlock` defaults to `LineHeight::Normal` (1.3×).
+When text wraps to multiple lines, `LineHeight` controls the spacing between them. The value is a unit-less multiplier
+of the text's font size (CSS `line-height` semantics). `TextBlock` defaults to `LineHeight::Normal` (1.3×).
 
 ```php
 use Yilanboy\Preview\Text\Enums\LineHeight;
