@@ -34,4 +34,3 @@ it('applies a margin preset', function () {
 
     expect($margin)->toBe(Margin::Large);
 });
-
