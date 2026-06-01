@@ -45,6 +45,33 @@ final class Writer
     }
 
     /**
+     * Uniform vertical metrics for a font + size, measured from a fixed
+     * reference string (independent of the rendered content) so every line
+     * shares the same height.
+     *
+     * @return array{ascent: int, height: int}
+     */
+    public function lineMetrics(int $fontSize, string $fontPath): array
+    {
+        // Reference covers ascenders, descenders, and CJK to capture full extent.
+        $bbox = imagettfbbox(
+            size: $fontSize,
+            angle: 0,
+            font_filename: $fontPath,
+            string: 'Ag字',
+        );
+
+        if ($bbox === false) {
+            throw new RuntimeException('Failed to calculate text bounding box');
+        }
+
+        $ascent = -$bbox[7];  // top of glyph above baseline (bbox[7] is negative)
+        $descent = $bbox[1];  // below baseline
+
+        return ['ascent' => $ascent, 'height' => $ascent + $descent];
+    }
+
+    /**
      * Wrap the text to multiple lines based on the maximum width.
      *
      * @return array<int, string>

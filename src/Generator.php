@@ -101,17 +101,17 @@ final class Generator
         $this->background->draw($image, $this->width, $this->height, $this->converter);
 
         if ($this->title !== null) {
-            $this->drawTextBlock($image, $this->title, $this->title->position ?? Position::Top);
+            $this->drawTextBlock($image, $this->title);
         }
 
         if ($this->description !== null) {
-            $this->drawTextBlock($image, $this->description, $this->description->position ?? Position::Center);
+            $this->drawTextBlock($image, $this->description);
         }
 
         return $image;
     }
 
-    private function drawTextBlock(GdImage $image, TextBlock $block, Position $position): void
+    private function drawTextBlock(GdImage $image, TextBlock $block): void
     {
         $fontPath = $block->font->path();
         $fontSize = $block->fontSize->value;
@@ -124,16 +124,12 @@ final class Generator
             maxWidth: $maxWidth,
         );
 
-        $metrics = imagettfbbox($fontSize, 0, $fontPath, $lines[0]);
+        $totalLines = count($lines);
 
-        if ($metrics === false) {
-            throw new RuntimeException('Failed to calculate text bounding box');
-        }
-
-        $lineGlyphHeight = $metrics[1] - $metrics[5];
-        $lineSpacing = $fontSize * $block->lineHeight->multiplier();
-        $blockHeight = intval($lineGlyphHeight + (count($lines) - 1) * $lineSpacing);
-        $baselineY = $this->resolveY($position, $blockHeight, $metrics);
+        // baseline-to-baseline distance (CSS-style line height)
+        $lineAdvance = (int) round($fontSize * $block->lineHeight->multiplier());
+        // uniform vertical metrics so every line shares the same height
+        $metrics = $this->writer->lineMetrics($fontSize, $fontPath);
         $color = $this->allocateColor($image, $this->converter->toHex($block->color));
 
         foreach ($lines as $i => $line) {
@@ -144,7 +140,7 @@ final class Generator
                 size: $fontSize,
                 angle: 0,
                 x: $this->resolveX($block->alignment, $lineWidth),
-                y: intval($baselineY + $i * $lineSpacing),
+                y: $this->resolveY($block->position, $metrics['ascent'], $metrics['height'], $totalLines, $i, $lineAdvance),
                 color: $color,
                 font_filename: $fontPath,
                 text: $line,
@@ -161,16 +157,17 @@ final class Generator
         };
     }
 
-    /**
-     * @param  array<int, int>  $metrics
-     */
-    private function resolveY(Position $position, int $blockHeight, array $metrics): int
+    private function resolveY(Position $position, int $ascent, int $glyphHeight, int $totalLines, int $lineIndex, int $lineAdvance): int
     {
-        return match ($position) {
-            Position::Top => intval($this->height / 3 - $blockHeight / 2),
-            Position::Center => intval(($this->height - $blockHeight) / 2 - $metrics[5]),
-            Position::Bottom => intval(2 * $this->height / 3 - $blockHeight / 2 - $metrics[5]),
+        $blockHeight = $glyphHeight + $lineAdvance * ($totalLines - 1);
+
+        $blockTop = match ($position) {
+            Position::Top => $this->margin->value,
+            Position::Center => intval(($this->height - $blockHeight) / 2),
+            Position::Bottom => $this->height - $this->margin->value - $blockHeight,
         };
+
+        return $blockTop + $ascent + $lineIndex * $lineAdvance;
     }
 
     private function allocateColor(GdImage $image, string $hex): int

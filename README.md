@@ -61,7 +61,7 @@ Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 | `Font`       | `NotoSansTC` · `NotoSans` · `Inter` · `Roboto`                                                     |
 | `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
 | `Alignment`  | `Left` · `Center` · `Right`                                                                        |
-| `LineHeight` | `Tight` (1.0) · `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                  |
+| `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
 
 All four bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese;
 the other three are Latin-only.
@@ -118,7 +118,6 @@ $generator->description(new TextBlock(
 
 | Preset    | Multiplier |
 |-----------|------------|
-| `Tight`   | 1.0×       |
 | `Snug`    | 1.15×      |
 | `Normal`  | 1.3×       |
 | `Relaxed` | 1.5×       |

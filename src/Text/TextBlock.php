@@ -20,7 +20,7 @@ final readonly class TextBlock
         public Font $font = Font::NotoSansTC,
         public Alignment $alignment = Alignment::Left,
         public LineHeight $lineHeight = LineHeight::Normal,
-        public ?Position $position = null,
+        public Position $position = Position::Center,
     ) {
         if ($text === '') {
             throw new InvalidArgumentException('TextBlock text cannot be empty');
@@ -57,7 +57,7 @@ final readonly class TextBlock
         return new self($this->text, $this->color, $this->fontSize, $this->font, $this->alignment, $lineHeight, $this->position);
     }
 
-    public function withPosition(?Position $position): self
+    public function withPosition(Position $position): self
     {
         return new self($this->text, $this->color, $this->fontSize, $this->font, $this->alignment, $this->lineHeight, $position);
     }

@@ -225,9 +225,9 @@ function renderAlignmentSelector(string $name, Alignment $selected): void
         'Right' => ['icon' => $iconRight, 'label' => 'Align right', 'case' => Alignment::Right],
     ];
     ?>
+
     <span class="align-group" role="radiogroup" aria-label="Alignment">
-        <?php
-        foreach ($options as $value => $meta) { ?>
+        <?php foreach ($options as $value => $meta) { ?>
             <label class="align-option align-option--<?= strtolower($value) ?>" title="<?= $meta['label'] ?>">
                 <input
                     type="radio"
@@ -238,9 +238,9 @@ function renderAlignmentSelector(string $name, Alignment $selected): void
                 <span aria-hidden="true"><?= $meta['icon'] ?></span>
                 <span class="visually-hidden"><?= $meta['label'] ?></span>
             </label>
-            <?php
-        } ?>
+        <?php } ?>
     </span>
+
     <?php
 }
 
@@ -279,6 +279,7 @@ function renderPositionSelector(string $name, Position $selected): void
         'Bottom' => ['icon' => $iconBottom, 'label' => 'Anchor bottom', 'case' => Position::Bottom],
     ];
     ?>
+
     <span class="align-group" role="radiogroup" aria-label="Position">
         <?php
         foreach ($options as $value => $meta) { ?>
@@ -679,13 +680,11 @@ function renderPositionSelector(string $name, Position $selected): void
             <label>
                 Margin
                 <select name="canvas[margin]">
-                    <?php
-                    foreach (Margin::cases() as $margin) { ?>
+                    <?php foreach (Margin::cases() as $margin) { ?>
                         <option value="<?= $margin->value ?>" <?= $margin === $canvasMargin ? 'selected' : '' ?>>
                             <?= $margin->name ?> (<?= $margin->value ?>px)
                         </option>
-                        <?php
-                    } ?>
+                    <?php } ?>
                 </select>
             </label>
         </div>
@@ -694,24 +693,20 @@ function renderPositionSelector(string $name, Position $selected): void
     <fieldset>
         <legend>Background</legend>
         <div class="bg-tabs" role="tablist">
-            <?php
-            foreach (['solid' => 'Solid', 'gradient' => 'Gradient', 'image' => 'Image'] as $value => $label) { ?>
+            <?php foreach (['solid' => 'Solid', 'gradient' => 'Gradient', 'image' => 'Image'] as $value => $label) { ?>
                 <label>
                     <input type="radio" name="background[type]"
                            value="<?= $value ?>" <?= $backgroundType === $value ? 'checked' : '' ?>
                            data-bg-tab="<?= $value ?>">
                     <span><?= $label ?></span>
                 </label>
-                <?php
-            } ?>
+            <?php } ?>
         </div>
 
-        <?php
-        if ($backgroundError !== null) { ?>
+        <?php if ($backgroundError !== null) { ?>
             <div class="error">Background error: <?= htmlspecialchars($backgroundError) ?> (fell back to solid color)
             </div>
-            <?php
-        } ?>
+        <?php } ?>
 
         <div class="bg-mode <?= $backgroundType === 'solid' ? 'is-active' : '' ?>" data-bg-panel="solid">
             <label>

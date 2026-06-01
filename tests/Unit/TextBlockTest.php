@@ -54,9 +54,3 @@ it('returns a new instance with updated position', function () {
         ->and($modified->position)->toBe(Position::Bottom)
         ->and($original)->not->toBe($modified);
 });
-
-it('clears position when withPosition receives null', function () {
-    $block = new TextBlock(text: 'Hello', position: Position::Bottom);
-
-    expect($block->withPosition(null)->position)->toBeNull();
-});
