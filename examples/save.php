@@ -22,8 +22,7 @@ new Generator()
     ->description(new TextBlock(
         text: 'A simple PHP package to create preview image',
         color: 'white',
-        fontSize: FontSize::Medium,
+        fontSize: FontSize::Small,
         font: Font::Inter,
-        lineHeight: LineHeight::Relaxed,
     ))
-    ->save('preview.png');
+    ->save('images/preview.png');
