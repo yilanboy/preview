@@ -7,7 +7,6 @@ use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
-use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\TextBlock;
 
 new Generator()
