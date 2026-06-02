@@ -65,8 +65,8 @@ final class Writer
             throw new RuntimeException('Failed to calculate text bounding box');
         }
 
-        $ascent = -$bbox[7];  // top of glyph above baseline (bbox[7] is negative)
-        $descent = $bbox[1];  // below baseline
+        $ascent = (int) -$bbox[7];  // top of glyph above baseline (bbox[7] is negative)
+        $descent = (int) $bbox[1];  // below baseline
 
         return ['ascent' => $ascent, 'height' => $ascent + $descent];
     }

@@ -10,6 +10,7 @@ use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\LineHeight;
+use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
 
 it('can save png image', function () {
@@ -44,6 +45,56 @@ it('matches snapshot', function () {
 
     unlink($actual);
 });
+
+it('stacks title above description without overlap when they share a position', function (Position $position) {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+
+    // Title near-black (#030712), description white (#ffffff), background green.
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog', position: $position))
+        ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white', position: $position))
+        ->save($actual);
+
+    $image = imagecreatefrompng($actual);
+
+    if ($image === false) {
+        throw new RuntimeException('Failed to read the generated image');
+    }
+
+    $width = imagesx($image);
+    $height = imagesy($image);
+
+    // Classify each row by the text color it contains.
+    $titleRows = [];
+    $descriptionRows = [];
+    for ($y = 0; $y < $height; $y++) {
+        for ($x = 0; $x < $width; $x++) {
+            $rgb = imagecolorat($image, $x, $y);
+            $r = ($rgb >> 16) & 0xFF;
+            $g = ($rgb >> 8) & 0xFF;
+            $b = $rgb & 0xFF;
+
+            if ($r < 40 && $g < 40 && $b < 40) {
+                $titleRows[$y] = true;
+            } elseif ($r > 220 && $g > 220 && $b > 220) {
+                $descriptionRows[$y] = true;
+            }
+        }
+    }
+
+    if ($titleRows === [] || $descriptionRows === []) {
+        throw new RuntimeException('Expected both title and description glyph rows to be present');
+    }
+
+    // No row contains both glyph colors, and the title band sits entirely
+    // above the description band.
+    expect(array_intersect_key($titleRows, $descriptionRows))->toBeEmpty()
+        ->and(max(array_keys($titleRows)))->toBeLessThan(min(array_keys($descriptionRows)));
+
+    unlink($actual);
+})->with([Position::Top, Position::Center, Position::Bottom]);
 
 it('fails snapshot when title color changes', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';

@@ -28,7 +28,7 @@ it('uses sensible defaults when only text is provided', function () {
         ->and($block->font)->toBe(Font::NotoSansTC)
         ->and($block->alignment)->toBe(Alignment::Left)
         ->and($block->lineHeight)->toBe(LineHeight::Normal)
-        ->and($block->position)->toBeNull();
+        ->and($block->position)->toBe(Position::Center);
 });
 
 it('returns a new instance with updated line height', function () {

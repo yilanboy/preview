@@ -10,6 +10,7 @@ use Yilanboy\Preview\Canvas\Background\Background;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Text\BlockLayout;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
@@ -100,18 +101,25 @@ final class Generator
 
         $this->background->draw($image, $this->width, $this->height, $this->converter);
 
-        if ($this->title !== null) {
-            $this->drawTextBlock($image, $this->title);
+        // Blocks sharing a position are stacked (title above description) and
+        // anchored as a single group, so they never overlap.
+        $groups = [];
+        foreach (array_filter([$this->title, $this->description]) as $block) {
+            $groups[$block->position->name][] = $this->layoutBlock($block);
         }
 
-        if ($this->description !== null) {
-            $this->drawTextBlock($image, $this->description);
+        foreach ($groups as $group) {
+            $this->drawGroup($image, $group);
         }
 
         return $image;
     }
 
-    private function drawTextBlock(GdImage $image, TextBlock $block): void
+    /**
+     * Measure a block: wrap its text and compute the metrics needed to place
+     * and render it.
+     */
+    private function layoutBlock(TextBlock $block): BlockLayout
     {
         $fontPath = $block->font->path();
         $fontSize = $block->fontSize->value;
@@ -124,25 +132,86 @@ final class Generator
             maxWidth: $maxWidth,
         );
 
-        $totalLines = count($lines);
-
         // baseline-to-baseline distance (CSS-style line height)
         $lineAdvance = (int) round($fontSize * $block->lineHeight->multiplier());
         // uniform vertical metrics so every line shares the same height
         $metrics = $this->writer->lineMetrics($fontSize, $fontPath);
-        $color = $this->allocateColor($image, $this->converter->toHex($block->color));
+        $height = $metrics['height'] + $lineAdvance * (count($lines) - 1);
 
-        foreach ($lines as $i => $line) {
-            $lineWidth = $this->writer->calculateTextImageWidth($line, $fontSize, $fontPath);
+        return new BlockLayout(
+            fontPath: $fontPath,
+            fontSize: $fontSize,
+            lines: $lines,
+            lineAdvance: $lineAdvance,
+            ascent: $metrics['ascent'],
+            height: $height,
+            position: $block->position,
+            color: $block->color,
+            alignment: $block->alignment,
+        );
+    }
+
+    /**
+     * Anchor a group of stacked blocks at their shared position and draw them
+     * top to bottom, separated by the gap below each block.
+     *
+     * @param  array<int, BlockLayout>  $group
+     */
+    private function drawGroup(GdImage $image, array $group): void
+    {
+        $lastIndex = count($group) - 1;
+
+        $groupHeight = 0;
+        foreach ($group as $i => $item) {
+            $groupHeight += $item->height;
+            if ($i < $lastIndex) {
+                $groupHeight += $this->gapAfter($item->fontSize);
+            }
+        }
+
+        $cursor = match ($group[0]->position) {
+            Position::Top => $this->margin->value,
+            Position::Center => intval(($this->height - $groupHeight) / 2),
+            Position::Bottom => $this->height - $this->margin->value - $groupHeight,
+        };
+
+        foreach ($group as $i => $item) {
+            $this->drawBlock($image, $item, $cursor);
+            $cursor += $item->height;
+            if ($i < $lastIndex) {
+                $cursor += $this->gapAfter($item->fontSize);
+            }
+        }
+    }
+
+    /**
+     * Vertical spacing placed below a block when another block is stacked
+     * beneath it. Tied to the block's font size — not its line-height, which
+     * governs spacing *within* a block rather than *between* blocks.
+     */
+    private function gapAfter(int $fontSize): int
+    {
+        return intval($fontSize * 0.6);
+    }
+
+    /**
+     * Render a single block's lines starting at the given top edge.
+     */
+    private function drawBlock(GdImage $image, BlockLayout $item, int $top): void
+    {
+        $color = $this->allocateColor($image, $this->converter->toHex($item->color));
+
+        foreach ($item->lines as $i => $line) {
+            $lineWidth = $this->writer->calculateTextImageWidth($line, $item->fontSize, $item->fontPath);
 
             imagettftext(
                 image: $image,
-                size: $fontSize,
+                size: $item->fontSize,
                 angle: 0,
-                x: $this->resolveX($block->alignment, $lineWidth),
-                y: $this->resolveY($block->position, $metrics['ascent'], $metrics['height'], $totalLines, $i, $lineAdvance),
+                x: $this->resolveX($item->alignment, $lineWidth),
+                y: $top + $item->ascent + $i * $item->lineAdvance,
                 color: $color,
-                font_filename: $fontPath,
+                font_filename: $item->fontPath,
                 text: $line,
             );
         }
@@ -155,19 +224,6 @@ final class Generator
             Alignment::Center => intval(($this->width - $textWidth) / 2),
             Alignment::Right => $this->width - $textWidth - $this->margin->value,
         };
-    }
-
-    private function resolveY(Position $position, int $ascent, int $glyphHeight, int $totalLines, int $lineIndex, int $lineAdvance): int
-    {
-        $blockHeight = $glyphHeight + $lineAdvance * ($totalLines - 1);
-
-        $blockTop = match ($position) {
-            Position::Top => $this->margin->value,
-            Position::Center => intval(($this->height - $blockHeight) / 2),
-            Position::Bottom => $this->height - $this->margin->value - $blockHeight,
-        };
-
-        return $blockTop + $ascent + $lineIndex * $lineAdvance;
     }
 
     private function allocateColor(GdImage $image, string $hex): int
