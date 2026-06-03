@@ -6,10 +6,10 @@ namespace Yilanboy\Preview;
 
 use GdImage;
 use RuntimeException;
-use Yilanboy\Preview\Canvas\Background\Background;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Contracts\Background;
 use Yilanboy\Preview\Text\BlockLayout;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Position;

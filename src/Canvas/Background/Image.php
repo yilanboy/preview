@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\ColorConverter;
+use Yilanboy\Preview\Contracts\Background;
 
 final readonly class Image implements Background
 {

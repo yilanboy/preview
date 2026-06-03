@@ -7,6 +7,7 @@ namespace Yilanboy\Preview\Canvas\Background;
 use GdImage;
 use RuntimeException;
 use Yilanboy\Preview\ColorConverter;
+use Yilanboy\Preview\Contracts\Background;
 
 final readonly class Solid implements Background
 {
