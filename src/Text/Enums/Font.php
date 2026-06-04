@@ -7,6 +7,8 @@ namespace Yilanboy\Preview\Text\Enums;
 enum Font: string
 {
     case NotoSansTC = 'noto-sans-tc.ttf';
+    case NotoSansSC = 'noto-sans-sc.ttf';
+    case NotoSansJP = 'noto-sans-jp.ttf';
     case NotoSans = 'noto-sans.ttf';
     case Inter = 'inter.ttf';
     case Roboto = 'roboto.ttf';

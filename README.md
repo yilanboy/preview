@@ -57,15 +57,16 @@ Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 
 | Enum         | Cases                                                                                              |
 |--------------|----------------------------------------------------------------------------------------------------|
-| `Font`       | `NotoSansTC` · `NotoSans` · `Inter` · `Roboto`                                                     |
+| `Font`       | `NotoSansTC` · `NotoSansSC` · `NotoSansJP` · `NotoSans` · `Inter` · `Roboto`                       |
 | `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
 | `Alignment`  | `Left` · `Center` · `Right`                                                                        |
 | `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
 
-All four bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese;
-the other three are Latin-only.
+All six bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese,
+`NotoSansSC` covers Latin + Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, and
+`Roboto` are Latin-only.
 
-> Currently, the text only supports English and Chinese.
+> Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
 
 ## Canvas Size
 

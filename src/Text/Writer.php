@@ -9,15 +9,19 @@ use RuntimeException;
 final class Writer
 {
     /**
-     * Splits the string into words.
-     * This method will split English into words,
-     * and Chinese and special symbols into characters.
+     * Tokenize a string into the smallest units at which a line may wrap.
+     *
+     * Each token is one unbreakable chunk for wrapText():
+     *  - Latin letters and digits group into whole words (wrap between words).
+     *  - Chinese, Japanese (Kanji, Hiragana, Katakana) split per character,
+     *    since these scripts may wrap between any two characters.
+     *  - Whitespace and other symbols each become a single token.
      *
      * @return array<string>
      */
     public function splitStringToArray(string $input): array
     {
-        preg_match_all('/\p{Han}|[a-zA-Z0-9]+|\s|[^\p{Han}\s\w]/u', $input, $matches);
+        preg_match_all('/[\p{Han}\p{Hiragana}\p{Katakana}]|[a-zA-Z0-9]+|\s|[^\p{Han}\p{Hiragana}\p{Katakana}\s\w]/u', $input, $matches);
 
         return $matches[0];
     }
