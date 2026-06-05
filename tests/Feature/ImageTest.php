@@ -3,6 +3,7 @@
 use Yilanboy\Preview\Canvas\Background\Gradient;
 use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\Canvas\Enums\Size;
@@ -288,7 +289,8 @@ it('matches Japanese text snapshot', function () {
         ->size(Size::OpenGraph)
         ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: '私のブログ', font: Font::NotoSansJP))
-        ->description(new TextBlock(text: '真のマスターは、永遠に学徒の心をもつ', color: 'white', font: Font::NotoSansJP))
+        ->description(new TextBlock(text: '真のマスターは、永遠に学徒の心をもつ', color: 'white',
+            font: Font::NotoSansJP))
         ->save($actual);
 
     if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
@@ -300,7 +302,7 @@ it('matches Japanese text snapshot', function () {
     unlink($actual);
 });
 
-it('matches Simplified Chinese text snapshot', function() {
+it('matches Simplified Chinese text snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/simplified-chinese-text.png';
 
@@ -308,7 +310,7 @@ it('matches Simplified Chinese text snapshot', function() {
         ->size(Size::OpenGraph)
         ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: '我的部落格', font: Font::NotoSansTC))
-        ->description(new TextBlock(text: '真正的大师，永远怀着一颗学徒的心', color: 'white',  font: Font::NotoSansTC))
+        ->description(new TextBlock(text: '真正的大师，永远怀着一颗学徒的心', color: 'white', font: Font::NotoSansTC))
         ->save($actual);
 
     if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
@@ -328,7 +330,7 @@ it('matches Traditional Chinese text snapshot', function () {
         ->size(Size::OpenGraph)
         ->background(new Solid('#10b981'))
         ->title(new TextBlock(text: '我的部落格', font: Font::NotoSansTC))
-        ->description(new TextBlock(text: '真正的大師，永遠懷著一顆學徒的心', color: 'white',  font: Font::NotoSansTC))
+        ->description(new TextBlock(text: '真正的大師，永遠懷著一顆學徒的心', color: 'white', font: Font::NotoSansTC))
         ->save($actual);
 
     if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
@@ -410,3 +412,20 @@ it('matches long-wrapping-text-loose snapshot', function () {
 
     unlink($actual);
 });
+
+it('saves in the requested format', function (Format $format, string $ext) {
+    $path = tempnam(sys_get_temp_dir(), 'preview_').".$ext";
+
+    new Generator()
+        ->format($format)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog'))
+        ->save($path);
+
+    expect(filesize($path))->toBeGreaterThan(0)
+        ->and(mime_content_type($path))->toBe($format->mimeType());
+})->with([
+    [Format::PNG, 'png'],
+    [Format::JPEG, 'jpg'],
+    [Format::WEBP, 'webp'],
+]);

@@ -7,6 +7,7 @@ namespace Yilanboy\Preview;
 use GdImage;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
@@ -27,6 +28,8 @@ final class Generator
     private ?TextBlock $title = null;
 
     private ?TextBlock $description = null;
+
+    private Format $format = Format::PNG;
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
@@ -58,6 +61,13 @@ final class Generator
         return $this;
     }
 
+    public function format(Format $format): self
+    {
+        $this->format = $format;
+
+        return $this;
+    }
+
     public function title(TextBlock $block): self
     {
         $this->title = $block;
@@ -75,16 +85,14 @@ final class Generator
     public function output(): void
     {
         $image = $this->render();
-
-        header('Content-Type: image/png');
-        imagepng($image);
+        header('Content-Type: '.$this->format->mimeType());
+        $this->format->write($image);
     }
 
     public function save(string $path): void
     {
         $image = $this->render();
-
-        imagepng($image, $path);
+        $this->format->write($image, $path);
     }
 
     private function render(): GdImage

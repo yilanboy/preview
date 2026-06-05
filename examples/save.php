@@ -3,6 +3,7 @@
 include_once __DIR__.'/../vendor/autoload.php';
 
 use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Font;
@@ -11,6 +12,7 @@ use Yilanboy\Preview\Text\TextBlock;
 
 new Generator()
     ->size(Size::OpenGraph)
+    ->format(Format::PNG)
     ->background(new Solid('#777bb3'))
     ->title(new TextBlock(
         text: 'Preview',
