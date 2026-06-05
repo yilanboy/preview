@@ -71,11 +71,11 @@ function imagesMatch(
                 continue;
             }
 
-            $dr = abs((($a >> 16) & 0xFF) - (($b >> 16) & 0xFF));
-            $dg = abs((($a >> 8) & 0xFF) - (($b >> 8) & 0xFF));
-            $db = abs(($a & 0xFF) - ($b & 0xFF));
+            $redDiff = abs((($a >> 16) & 0xFF) - (($b >> 16) & 0xFF));
+            $greenDiff = abs((($a >> 8) & 0xFF) - (($b >> 8) & 0xFF));
+            $blueDiff = abs(($a & 0xFF) - ($b & 0xFF));
 
-            if (max($dr, $dg, $db) > $colorThreshold) {
+            if (max($redDiff, $greenDiff, $blueDiff) > $colorThreshold) {
                 $mask[$row + $x] = 1;
             }
         }
@@ -88,9 +88,16 @@ function imagesMatch(
             if (! $mask[$row + $x]) {
                 continue;
             }
-            $n = $mask[$row - $width + $x - 1] + $mask[$row - $width + $x] + $mask[$row - $width + $x + 1]
-               + $mask[$row + $x - 1] + $mask[$row + $x + 1]
-               + $mask[$row + $width + $x - 1] + $mask[$row + $width + $x] + $mask[$row + $width + $x + 1];
+
+            $n = $mask[$row - $width + $x - 1]  // Top-left
+                + $mask[$row - $width + $x]     // Top
+                + $mask[$row - $width + $x + 1] // Top-right
+                + $mask[$row + $x - 1]          // Left
+                + $mask[$row + $x + 1]          // Right
+                + $mask[$row + $width + $x - 1] // Bottom-left
+                + $mask[$row + $width + $x]     // Bottom
+                + $mask[$row + $width + $x + 1];// Bottom-right
+
             if ($n >= $minClusterNeighbors) {
                 $clustered++;
             }
