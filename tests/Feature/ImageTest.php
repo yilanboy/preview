@@ -280,15 +280,55 @@ it('matches inter-font snapshot', function () {
     unlink($actual);
 });
 
-it('matches chinese-text snapshot', function () {
+it('matches Japanese text snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
-    $fixture = __DIR__.'/../Fixtures/chinese-text.png';
+    $fixture = __DIR__.'/../Fixtures/japanese-text.png';
 
     new Generator()
         ->size(Size::OpenGraph)
         ->background(new Solid('#10b981'))
-        ->title(new TextBlock(text: '我的部落格'))
-        ->description(new TextBlock(text: '真正的大師，永遠懷著一顆學徒的心', color: 'white'))
+        ->title(new TextBlock(text: '私のブログ', font: Font::NotoSansJP))
+        ->description(new TextBlock(text: '真のマスターは、永遠に学徒の心をもつ', color: 'white', font: Font::NotoSansJP))
+        ->save($actual);
+
+    if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
+        copy($actual, $fixture);
+    }
+
+    expect(imagesMatch($actual, $fixture))->toBeTrue();
+
+    unlink($actual);
+});
+
+it('matches Simplified Chinese text snapshot', function() {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+    $fixture = __DIR__.'/../Fixtures/simplified-chinese-text.png';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: '我的部落格', font: Font::NotoSansTC))
+        ->description(new TextBlock(text: '真正的大师，永远怀着一颗学徒的心', color: 'white',  font: Font::NotoSansTC))
+        ->save($actual);
+
+    if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
+        copy($actual, $fixture);
+    }
+
+    expect(imagesMatch($actual, $fixture))->toBeTrue();
+
+    unlink($actual);
+});
+
+it('matches Traditional Chinese text snapshot', function () {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+    $fixture = __DIR__.'/../Fixtures/traditional-chinese-text.png';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: '我的部落格', font: Font::NotoSansTC))
+        ->description(new TextBlock(text: '真正的大師，永遠懷著一顆學徒的心', color: 'white',  font: Font::NotoSansTC))
         ->save($actual);
 
     if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {

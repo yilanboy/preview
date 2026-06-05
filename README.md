@@ -204,3 +204,20 @@ Run all checks (Pint + PHPStan):
 ```bash
 composer check
 ```
+
+### Snapshot Testing
+
+The image tests use snapshot testing: each test generates a PNG and compares it against a stored reference image in
+`tests/Fixtures/`. The comparison is tolerant rather than pixel-exact — it ignores anti-aliasing noise that differs
+between macOS and Linux FreeType builds, while still catching real rendering changes (different text, color, or layout).
+
+When you make an intentional change to rendering output, regenerate the fixtures by setting the `UPDATE_SNAPSHOTS`
+environment variable (any non-empty value other than `0` works):
+
+```bash
+UPDATE_SNAPSHOTS=1 composer tests
+```
+
+Each snapshot test detects the variable and overwrites its fixture in `tests/Fixtures/` with the freshly generated
+image. Always open the regenerated PNGs and confirm they look correct before committing — once a fixture is updated,
+it becomes the new source of truth.
