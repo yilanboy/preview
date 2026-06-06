@@ -11,7 +11,7 @@ final class ColorConverter
     /**
      * Check the string is a color hex format
      */
-    public function isHexColor(string $color): bool
+    public static function isHexColor(string $color): bool
     {
         return preg_match('/^#[a-f0-9]{6}$/i', $color) === 1;
     }
@@ -36,7 +36,7 @@ final class ColorConverter
     /**
      * Convert color name to hex code
      */
-    public function nameToHex(string $word): string
+    public static function nameToHex(string $word): string
     {
         return match (strtolower($word)) {
             'red' => '#ff0000',

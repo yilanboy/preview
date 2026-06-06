@@ -29,7 +29,7 @@ final class Writer
     /**
      * Calculate the width of the text image.
      */
-    public function calculateTextImageWidth(
+    public function calculateTextBlockWidth(
         string $text,
         int $fontSize,
         string $fontPath,
@@ -53,9 +53,9 @@ final class Writer
      * reference string (independent of the rendered content) so every line
      * shares the same height.
      *
-     * @return array{ascent: int, height: int}
+     * @return array<int>
      */
-    public function lineMetrics(int $fontSize, string $fontPath): array
+    public function lineBoundingBox(int $fontSize, string $fontPath): array
     {
         // Reference covers ascenders, descenders, and CJK to capture full extent.
         $bbox = imagettfbbox(
@@ -69,10 +69,7 @@ final class Writer
             throw new RuntimeException('Failed to calculate text bounding box');
         }
 
-        $ascent = (int) -$bbox[7];  // top of glyph above baseline (bbox[7] is negative)
-        $descent = (int) $bbox[1];  // below baseline
-
-        return ['ascent' => $ascent, 'height' => $ascent + $descent];
+        return $bbox;
     }
 
     /**
@@ -93,7 +90,7 @@ final class Writer
         foreach ($words as $word) {
             $proposed = $current.$word;
 
-            if ($this->calculateTextImageWidth($proposed, $fontSize, $fontPath) < $maxWidth) {
+            if ($this->calculateTextBlockWidth($proposed, $fontSize, $fontPath) < $maxWidth) {
                 $current = $proposed;
 
                 continue;

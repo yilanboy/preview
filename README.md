@@ -45,12 +45,13 @@ This code will display the following image on the web page.
 
 ![preview](images/preview.png)
 
-`TextBlock` is immutable. Use the `with*()` methods to derive a modified copy:
+`TextBlock` is a `final readonly` class, so it's immutable. Every constructor
+argument is named and defaulted — to vary a field, construct a new instance:
 
 ```php
 $base = new TextBlock(text: 'Hello');
-$red  = $base->withColor('red');
-$big  = $base->withFontSize(FontSize::Huge);
+$red  = new TextBlock(text: 'Hello', color: 'red');
+$big  = new TextBlock(text: 'Hello', fontSize: FontSize::Huge);
 ```
 
 Available customization enums live under `Yilanboy\Preview\Text\Enums`:

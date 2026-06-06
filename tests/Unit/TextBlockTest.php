@@ -11,15 +11,6 @@ it('throws when text is empty', function () {
     new TextBlock(text: '');
 })->throws(InvalidArgumentException::class, 'TextBlock text cannot be empty');
 
-it('is immutable when modified', function () {
-    $original = new TextBlock(text: 'Hello', color: 'red');
-    $modified = $original->withColor('blue');
-
-    expect($original->color)->toBe('red')
-        ->and($modified->color)->toBe('blue')
-        ->and($original)->not->toBe($modified);
-});
-
 it('uses sensible defaults when only text is provided', function () {
     $block = new TextBlock(text: 'Hello');
 
@@ -31,26 +22,8 @@ it('uses sensible defaults when only text is provided', function () {
         ->and($block->position)->toBe(Position::Center);
 });
 
-it('returns a new instance with updated line height', function () {
-    $original = new TextBlock(text: 'Hello');
-    $modified = $original->withLineHeight(LineHeight::Loose);
-
-    expect($original->lineHeight)->toBe(LineHeight::Normal)
-        ->and($modified->lineHeight)->toBe(LineHeight::Loose)
-        ->and($original)->not->toBe($modified);
-});
-
 it('accepts an explicit vertical position', function () {
     $block = new TextBlock(text: 'Hello', position: Position::Bottom);
 
     expect($block->position)->toBe(Position::Bottom);
-});
-
-it('returns a new instance with updated position', function () {
-    $original = new TextBlock(text: 'Hello', position: Position::Top);
-    $modified = $original->withPosition(Position::Bottom);
-
-    expect($original->position)->toBe(Position::Top)
-        ->and($modified->position)->toBe(Position::Bottom)
-        ->and($original)->not->toBe($modified);
 });

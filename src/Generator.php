@@ -11,11 +11,9 @@ use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
-use Yilanboy\Preview\Text\BlockLayout;
-use Yilanboy\Preview\Text\Enums\Alignment;
-use Yilanboy\Preview\Text\Enums\Position;
+use Yilanboy\Preview\Text\PlacedLine;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\Writer;
+use Yilanboy\Preview\Text\TextGroup;
 
 final class Generator
 {
@@ -34,7 +32,7 @@ final class Generator
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
         private readonly ColorConverter $converter = new ColorConverter,
-        private readonly Writer $writer = new Writer,
+        private readonly TextGroup $group = new TextGroup,
     ) {
         $this->size(Size::OpenGraph);
     }
@@ -109,129 +107,34 @@ final class Generator
 
         $this->background->draw($image, $this->width, $this->height, $this->converter);
 
-        // Blocks sharing a position are stacked (title above description) and
-        // anchored as a single group, so they never overlap.
-        $groups = [];
-        foreach (array_filter([$this->title, $this->description]) as $block) {
-            $groups[$block->position->name][] = $this->layoutBlock($block);
-        }
+        // remove empty text blocks
+        $blocks = array_filter([$this->title, $this->description]);
 
-        foreach ($groups as $group) {
-            $this->drawGroup($image, $group);
+        // lines 是包含 title 與 description 每一行的資訊，即 PlacedLine
+        $lines = $this->group->place($this->width, $this->height, $this->margin->value, $blocks);
+
+        foreach ($lines as $line) {
+            $this->stamp($image, $line);
         }
 
         return $image;
     }
 
     /**
-     * Measure a block: wrap its text and compute the metrics needed to place
-     * and render it.
+     * Draw a single placed line onto the canvas at its resolved baseline.
      */
-    private function layoutBlock(TextBlock $block): BlockLayout
+    private function stamp(GdImage $image, PlacedLine $line): void
     {
-        $fontPath = $block->font->path();
-        $fontSize = $block->fontSize->value;
-        $maxWidth = $this->width - $this->margin->value * 2;
-
-        $lines = $this->writer->wrapText(
-            text: $block->text,
-            fontSize: $fontSize,
-            fontPath: $fontPath,
-            maxWidth: $maxWidth,
+        imagettftext(
+            image: $image,
+            size: $line->fontSize,
+            angle: 0,
+            x: $line->x,
+            y: $line->y,
+            color: $this->allocateColor($image, $this->converter->toHex($line->color)),
+            font_filename: $line->fontPath,
+            text: $line->text,
         );
-
-        // baseline-to-baseline distance (CSS-style line height)
-        $lineAdvance = (int) round($fontSize * $block->lineHeight->multiplier());
-        // uniform vertical metrics so every line shares the same height
-        $metrics = $this->writer->lineMetrics($fontSize, $fontPath);
-        $height = $metrics['height'] + $lineAdvance * (count($lines) - 1);
-
-        return new BlockLayout(
-            fontPath: $fontPath,
-            fontSize: $fontSize,
-            lines: $lines,
-            lineAdvance: $lineAdvance,
-            ascent: $metrics['ascent'],
-            height: $height,
-            position: $block->position,
-            color: $block->color,
-            alignment: $block->alignment,
-        );
-    }
-
-    /**
-     * Anchor a group of stacked blocks at their shared position and draw them
-     * top to bottom, separated by the gap below each block.
-     *
-     * @param  array<int, BlockLayout>  $group
-     */
-    private function drawGroup(GdImage $image, array $group): void
-    {
-        $lastIndex = count($group) - 1;
-
-        $groupHeight = 0;
-        foreach ($group as $i => $item) {
-            $groupHeight += $item->height;
-            if ($i < $lastIndex) {
-                $groupHeight += $this->gapAfter($item->fontSize);
-            }
-        }
-
-        $cursor = match ($group[0]->position) {
-            Position::Top => $this->margin->value,
-            Position::Center => intval(($this->height - $groupHeight) / 2),
-            Position::Bottom => $this->height - $this->margin->value - $groupHeight,
-        };
-
-        foreach ($group as $i => $item) {
-            $this->drawBlock($image, $item, $cursor);
-            $cursor += $item->height;
-            if ($i < $lastIndex) {
-                $cursor += $this->gapAfter($item->fontSize);
-            }
-        }
-    }
-
-    /**
-     * Vertical spacing placed below a block when another block is stacked
-     * beneath it. Tied to the block's font size — not its line-height, which
-     * governs spacing *within* a block rather than *between* blocks.
-     */
-    private function gapAfter(int $fontSize): int
-    {
-        return intval($fontSize * 0.6);
-    }
-
-    /**
-     * Render a single block's lines starting at the given top edge.
-     */
-    private function drawBlock(GdImage $image, BlockLayout $item, int $top): void
-    {
-        $color = $this->allocateColor($image, $this->converter->toHex($item->color));
-
-        foreach ($item->lines as $i => $line) {
-            $lineWidth = $this->writer->calculateTextImageWidth($line, $item->fontSize, $item->fontPath);
-
-            imagettftext(
-                image: $image,
-                size: $item->fontSize,
-                angle: 0,
-                x: $this->resolveX($item->alignment, $lineWidth),
-                y: $top + $item->ascent + $i * $item->lineAdvance,
-                color: $color,
-                font_filename: $item->fontPath,
-                text: $line,
-            );
-        }
-    }
-
-    private function resolveX(Alignment $alignment, int $textWidth): int
-    {
-        return match ($alignment) {
-            Alignment::Left => $this->margin->value,
-            Alignment::Center => intval(($this->width - $textWidth) / 2),
-            Alignment::Right => $this->width - $textWidth - $this->margin->value,
-        };
     }
 
     private function allocateColor(GdImage $image, string $hex): int

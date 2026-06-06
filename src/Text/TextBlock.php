@@ -26,39 +26,4 @@ final readonly class TextBlock
             throw new InvalidArgumentException('TextBlock text cannot be empty');
         }
     }
-
-    public function withText(string $text): self
-    {
-        return new self($text, $this->color, $this->fontSize, $this->font, $this->alignment, $this->lineHeight, $this->position);
-    }
-
-    public function withColor(string $color): self
-    {
-        return new self($this->text, $color, $this->fontSize, $this->font, $this->alignment, $this->lineHeight, $this->position);
-    }
-
-    public function withFontSize(FontSize $fontSize): self
-    {
-        return new self($this->text, $this->color, $fontSize, $this->font, $this->alignment, $this->lineHeight, $this->position);
-    }
-
-    public function withFont(Font $font): self
-    {
-        return new self($this->text, $this->color, $this->fontSize, $font, $this->alignment, $this->lineHeight, $this->position);
-    }
-
-    public function withAlignment(Alignment $alignment): self
-    {
-        return new self($this->text, $this->color, $this->fontSize, $this->font, $alignment, $this->lineHeight, $this->position);
-    }
-
-    public function withLineHeight(LineHeight $lineHeight): self
-    {
-        return new self($this->text, $this->color, $this->fontSize, $this->font, $this->alignment, $lineHeight, $this->position);
-    }
-
-    public function withPosition(Position $position): self
-    {
-        return new self($this->text, $this->color, $this->fontSize, $this->font, $this->alignment, $this->lineHeight, $position);
-    }
 }

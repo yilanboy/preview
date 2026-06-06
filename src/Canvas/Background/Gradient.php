@@ -39,7 +39,7 @@ final readonly class Gradient implements Background
 
         for ($y = 0; $y < $height; $y++) {
             $color = $this->interpolate($from, $to, $y / $denominator);
-            imageline($image, 0, $y, $width - 1, $y, $color);
+            imageline(image: $image, x1: 0, y1: $y, x2: $width - 1, y2: $y, color: $color);
         }
     }
 
@@ -53,7 +53,7 @@ final readonly class Gradient implements Background
 
         for ($x = 0; $x < $width; $x++) {
             $color = $this->interpolate($from, $to, $x / $denominator);
-            imageline($image, $x, 0, $x, $height - 1, $color);
+            imageline(image: $image, x1: $x, y1: 0, x2: $x, y2: $height - 1, color: $color);
         }
     }
 

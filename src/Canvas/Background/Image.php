@@ -120,9 +120,11 @@ final readonly class Image implements Background
             for ($x = 0; $x < $dstWidth; $x += $srcWidth) {
                 if ($pct === 100) {
                     imagecopy($dst, $src, $x, $y, 0, 0, $srcWidth, $srcHeight);
-                } else {
-                    imagecopymerge($dst, $src, $x, $y, 0, 0, $srcWidth, $srcHeight, $pct);
+
+                    continue;
                 }
+
+                imagecopymerge($dst, $src, $x, $y, 0, 0, $srcWidth, $srcHeight, $pct);
             }
         }
     }
