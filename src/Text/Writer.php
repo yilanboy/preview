@@ -21,6 +21,8 @@ final class Writer
      */
     public function splitStringToArray(string $input): array
     {
+        $matches = null;
+
         preg_match_all('/[\p{Han}\p{Hiragana}\p{Katakana}]|[a-zA-Z0-9]+|\s|[^\p{Han}\p{Hiragana}\p{Katakana}\s\w]/u', $input, $matches);
 
         return $matches[0];
@@ -45,7 +47,7 @@ final class Writer
             throw new RuntimeException('Failed to calculate text bounding box');
         }
 
-        return $bbox[2] - $bbox[0];
+        return (int) $bbox[2] - (int) $bbox[0];
     }
 
     /**

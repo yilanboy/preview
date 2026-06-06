@@ -96,7 +96,7 @@ function imagesMatch(
                 + $mask[$row + $x + 1]          // Right
                 + $mask[$row + $width + $x - 1] // Bottom-left
                 + $mask[$row + $width + $x]     // Bottom
-                + $mask[$row + $width + $x + 1];// Bottom-right
+                + $mask[$row + $width + $x + 1]; // Bottom-right
 
             if ($n >= $minClusterNeighbors) {
                 $clustered++;

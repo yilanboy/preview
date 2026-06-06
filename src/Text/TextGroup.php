@@ -30,9 +30,9 @@ final readonly class TextGroup
         $groups = [];
         foreach ($blocks as $block) {
             // [
-            //     TOP => [],
-            //     CENTER => [],
-            //     BOTTOM => [],
+            //     "TOP" => [],
+            //     "CENTER" => [],
+            //     "BOTTOM" => [],
             // ]
             $groups[$block->position->name][] = $this->measure($block, $width, $margin);
         }
