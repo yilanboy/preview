@@ -2,5 +2,11 @@
 
 *.php diff=php
 
-/.github export-ignore
-CHANGELOG.md export-ignore
+/.git*         export-ignore
+/tests         export-ignore
+/images        export-ignore
+/examples      export-ignore
+/.editorconfig export-ignore
+/phpstan.neon  export-ignore
+/phpunit.xml   export-ignore
+/CHANGELOG.md  export-ignore

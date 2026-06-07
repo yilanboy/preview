@@ -11,7 +11,7 @@ use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
-use Yilanboy\Preview\Text\PlacedLine;
+use Yilanboy\Preview\Text\PlacedTextBlock;
 use Yilanboy\Preview\Text\TextBlock;
 use Yilanboy\Preview\Text\TextGroup;
 
@@ -122,7 +122,7 @@ final class Generator
     /**
      * Draw a single placed line onto the canvas at its resolved baseline.
      */
-    private function stamp(GdImage $image, PlacedLine $line): void
+    private function stamp(GdImage $image, PlacedTextBlock $line): void
     {
         imagettftext(
             image: $image,

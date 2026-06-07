@@ -23,11 +23,11 @@ final readonly class TextGroup
      * description) and anchored as a single group, so they never overlap.
      *
      * @param  array<int, TextBlock>  $blocks
-     * @return array<int, PlacedLine>
+     * @return array<int, PlacedTextBlock>
      */
     public function place(int $width, int $height, int $margin, array $blocks): array
     {
-        /* @var array<string<'TOP', 'CENTER', 'BOTTOM'>, array<BlockLayout>> $positionGroups */
+        /* @var array<string<'TOP', 'CENTER', 'BOTTOM'>, array<TextBlockLayout>> $positionGroups */
         $positionGroups = [];
         foreach ($blocks as $block) {
             $positionGroups[$block->position->name][] = $this->measure($block, $width, $margin);
@@ -47,7 +47,7 @@ final readonly class TextGroup
      * Measure a block: wrap its text and compute the metrics needed to place
      * and render it.
      */
-    private function measure(TextBlock $block, int $width, int $margin): BlockLayout
+    private function measure(TextBlock $block, int $width, int $margin): TextBlockLayout
     {
         $fontPath = $block->font->path();
         $fontSize = $block->fontSize->value;
@@ -69,7 +69,7 @@ final readonly class TextGroup
         $height = $ascent + $descent;
         $blockHeight = $height + $lineAdvance * (count($lines) - 1);
 
-        return new BlockLayout(
+        return new TextBlockLayout(
             fontPath: $fontPath,
             fontSize: $fontSize,
             lines: $lines,
@@ -86,8 +86,8 @@ final readonly class TextGroup
      * Anchor a group of stacked blocks at their shared position and place them
      * top to bottom, separated by the gap below each block.
      *
-     * @param  array<int, BlockLayout>  $group
-     * @return array<int, PlacedLine>
+     * @param  array<int, TextBlockLayout>  $group
+     * @return array<int, PlacedTextBlock>
      */
     private function placeGroup(array $group, int $width, int $height, int $margin): array
     {
@@ -121,15 +121,15 @@ final readonly class TextGroup
      * Resolve a single block's lines to placed lines starting at the given top
      * edge.
      *
-     * @return array<int, PlacedLine>
+     * @return array<int, PlacedTextBlock>
      */
-    private function placeBlock(BlockLayout $item, int $top, int $width, int $margin): array
+    private function placeBlock(TextBlockLayout $item, int $top, int $width, int $margin): array
     {
         $placed = [];
         foreach ($item->lines as $i => $line) {
             $lineWidth = $this->writer->calculateTextBlockWidth($line, $item->fontSize, $item->fontPath);
 
-            $placed[] = new PlacedLine(
+            $placed[] = new PlacedTextBlock(
                 x: $this->resolveX($item->alignment, $lineWidth, $width, $margin),
                 y: $top + $item->ascent + $i * $item->lineAdvance,
                 text: $line,
@@ -161,7 +161,7 @@ final readonly class TextGroup
         };
     }
 
-    public function calculateCursorY(BlockLayout $group, int $margin, int $height, int $groupHeight): int
+    public function calculateCursorY(TextBlockLayout $group, int $margin, int $height, int $groupHeight): int
     {
         return match ($group->position) {
             Position::Top => $margin,
