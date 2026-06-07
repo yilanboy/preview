@@ -110,7 +110,6 @@ final class Generator
         // remove empty text blocks
         $blocks = array_filter([$this->title, $this->description]);
 
-        // lines 是包含 title 與 description 每一行的資訊，即 PlacedLine
         $lines = $this->group->place($this->width, $this->height, $this->margin->value, $blocks);
 
         foreach ($lines as $line) {

@@ -27,18 +27,14 @@ final readonly class TextGroup
      */
     public function place(int $width, int $height, int $margin, array $blocks): array
     {
-        $groups = [];
+        /* @var array<string<'TOP', 'CENTER', 'BOTTOM'>, array<BlockLayout>> $positionGroups */
+        $positionGroups = [];
         foreach ($blocks as $block) {
-            // [
-            //     "TOP" => [],
-            //     "CENTER" => [],
-            //     "BOTTOM" => [],
-            // ]
-            $groups[$block->position->name][] = $this->measure($block, $width, $margin);
+            $positionGroups[$block->position->name][] = $this->measure($block, $width, $margin);
         }
 
         $placed = [];
-        foreach ($groups as $group) {
+        foreach ($positionGroups as $group) {
             foreach ($this->placeGroup($group, $width, $height, $margin) as $line) {
                 $placed[] = $line;
             }
@@ -105,11 +101,7 @@ final readonly class TextGroup
             }
         }
 
-        $cursor = match ($group[0]->position) {
-            Position::Top => $margin,
-            Position::Center => intval(($height - $groupHeight) / 2),
-            Position::Bottom => $height - $margin - $groupHeight,
-        };
+        $cursor = $this->calculateCursorY($group[0], $margin, $height, $groupHeight);
 
         $placed = [];
         foreach ($group as $i => $item) {
@@ -166,6 +158,15 @@ final readonly class TextGroup
             Alignment::Left => $margin,
             Alignment::Center => intval(($width - $textWidth) / 2),
             Alignment::Right => $width - $textWidth - $margin,
+        };
+    }
+
+    public function calculateCursorY(BlockLayout $group, int $margin, int $height, int $groupHeight): int
+    {
+        return match ($group->position) {
+            Position::Top => $margin,
+            Position::Center => intval(($height - $groupHeight) / 2),
+            Position::Bottom => $height - $margin - $groupHeight,
         };
     }
 }
