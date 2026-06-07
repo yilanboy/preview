@@ -13,7 +13,7 @@ use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
 use Yilanboy\Preview\Text\PlacedTextBlock;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\TextGroup;
+use Yilanboy\Preview\Text\TextBlockGroup;
 
 final class Generator
 {
@@ -32,7 +32,7 @@ final class Generator
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
         private readonly ColorConverter $converter = new ColorConverter,
-        private readonly TextGroup $group = new TextGroup,
+        private readonly TextBlockGroup $group = new TextBlockGroup,
     ) {
         $this->size(Size::OpenGraph);
     }

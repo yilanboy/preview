@@ -12,7 +12,7 @@ use Yilanboy\Preview\Text\Enums\Position;
  * resolves every line to its final baseline coordinate. Pure geometry — it
  * never touches a GdImage, so its output can be asserted directly.
  */
-final readonly class TextGroup
+final readonly class TextBlockGroup
 {
     public function __construct(private Writer $writer = new Writer) {}
 
