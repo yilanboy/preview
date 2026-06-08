@@ -15,9 +15,7 @@ use Yilanboy\Preview\Text\Enums\Position;
  */
 final readonly class TextBlockGroup
 {
-    public function __construct(private Writer $writer = new Writer)
-    {
-    }
+    public function __construct(private Writer $writer = new Writer) {}
 
     /**
      * Resolve blocks to their placed lines on a canvas of the given size.
