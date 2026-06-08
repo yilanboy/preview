@@ -22,8 +22,12 @@ final readonly class Image implements Background
             throw new InvalidArgumentException('Opacity must be between 0.0 and 1.0');
         }
 
-        if (! file_exists($path)) {
+        if (! is_file($path) || ! is_readable($path)) {
             throw new InvalidArgumentException("Background image not found: {$path}");
+        }
+
+        if (! ImageValidator::isValidImage($path)) {
+            throw new InvalidArgumentException("Invalid background image: {$path}");
         }
     }
 

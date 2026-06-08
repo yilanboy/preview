@@ -7,6 +7,17 @@ it('throws when the file does not exist', function () {
     new Image('/this/path/does/not/exist.png');
 })->throws(InvalidArgumentException::class, 'Background image not found');
 
+it('throws when the file exists but is not a valid image', function () {
+    $fake = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+    file_put_contents($fake, 'this is not a png');
+
+    try {
+        new Image($fake);
+    } finally {
+        unlink($fake);
+    }
+})->throws(InvalidArgumentException::class, 'Invalid background image');
+
 it('defaults to Cover fit', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     $bg = new Image($fixture);
