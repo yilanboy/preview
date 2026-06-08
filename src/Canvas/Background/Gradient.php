@@ -65,11 +65,15 @@ final readonly class Gradient implements Background
     {
         $denominator = max($width + $height - 2, 1);
 
-        for ($y = 0; $y < $height; $y++) {
-            for ($x = 0; $x < $width; $x++) {
-                $color = $this->interpolate($from, $to, ($x + $y) / $denominator);
-                imagesetpixel($image, $x, $y, $color);
-            }
+        for ($k = 0; $k <= $width + $height - 2; $k++) {
+            $color = $this->interpolate($from, $to, $k / $denominator);
+
+            $x1 = min($k, $width - 1);
+            $y1 = $k - $x1;
+            $x2 = max(0, $k - ($height - 1));
+            $y2 = $k - $x2;
+
+            imageline(image: $image, x1: $x1, y1: $y1, x2: $x2, y2: $y2, color: $color);
         }
     }
 
