@@ -1,6 +1,7 @@
 <?php
 
 use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
@@ -20,7 +21,9 @@ it('right-aligns a line against the far margin', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Right);
     $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
 
-    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $block->font->path());
+    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+
+    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
 
     expect($lines[0]->x)->toBe(1200 - $width - 60);
 });
@@ -29,7 +32,9 @@ it('centers a line horizontally', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Center);
     $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
 
-    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $block->font->path());
+    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+
+    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
 
     expect($lines[0]->x)->toBe(intval((1200 - $width) / 2));
 });
@@ -38,7 +43,9 @@ it('places a Top block one ascent below the margin', function () {
     $block = new TextBlock(text: 'Hello', position: Position::Top);
     $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
 
-    $boundingBox = new Writer()->lineBoundingBox($block->fontSize->value, $block->font->path());
+    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+
+    $boundingBox = new Writer()->lineBoundingBox($block->fontSize->value, $fontPath);
     $ascent = -$boundingBox[7];  // top of glyph above baseline (bbox[7] is negative)
 
     expect($lines[0]->y)->toBe(60 + $ascent);

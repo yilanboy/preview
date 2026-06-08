@@ -124,7 +124,7 @@ final class Generator
      */
     private function stamp(GdImage $image, PlacedTextBlock $line): void
     {
-        imagettftext(
+        $result = imagettftext(
             image: $image,
             size: $line->fontSize,
             angle: 0,
@@ -134,6 +134,10 @@ final class Generator
             font_filename: $line->fontPath,
             text: $line->text,
         );
+
+        if ($result === false) {
+            throw new RuntimeException('Failed to render text onto the image');
+        }
     }
 
     private function allocateColor(GdImage $image, string $hex): int

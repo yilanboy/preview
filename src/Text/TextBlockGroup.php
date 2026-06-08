@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Text;
 
 use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\Position;
 
 /**
@@ -14,7 +15,9 @@ use Yilanboy\Preview\Text\Enums\Position;
  */
 final readonly class TextBlockGroup
 {
-    public function __construct(private Writer $writer = new Writer) {}
+    public function __construct(private Writer $writer = new Writer)
+    {
+    }
 
     /**
      * Resolve blocks to their placed lines on a canvas of the given size.
@@ -49,7 +52,7 @@ final readonly class TextBlockGroup
      */
     private function measure(TextBlock $block, int $width, int $margin): TextBlockLayout
     {
-        $fontPath = $block->font->path();
+        $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
         $fontSize = $block->fontSize->value;
         $maxWidth = $width - $margin * 2;
 

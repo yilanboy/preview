@@ -23,13 +23,13 @@
     ],
     "require": {
         "php": "^8.4",
-        "ext-gd": "*"
+        "ext-gd": "*",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "pestphp/pest": "^4.0.0",
         "laravel/pint": "^1.29",
-        "phpstan/phpstan": "^2.1",
-        "ext-fileinfo": "*"
+        "phpstan/phpstan": "^2.1"
     },
     "config": {
         "allow-plugins": {

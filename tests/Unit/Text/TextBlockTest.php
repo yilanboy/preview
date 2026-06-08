@@ -27,3 +27,13 @@ it('accepts an explicit vertical position', function () {
 
     expect($block->position)->toBe(Position::Bottom);
 });
+
+it('accepts a custom TrueType font path', function () {
+    $block = new TextBlock(text: 'Hello', font: Font::NotoSansTC->path());
+
+    expect($block->font)->toBe(Font::NotoSansTC->path());
+});
+
+it('throws when the custom font path is not a valid TrueType file', function () {
+    new TextBlock(text: 'Hello', font: '/no/such/font.ttf');
+})->throws(InvalidArgumentException::class, 'The font path is not a valid TrueType font file');

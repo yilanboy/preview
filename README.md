@@ -69,6 +69,35 @@ All six bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansT
 
 > Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
 
+### Custom Fonts
+
+The `font` argument also accepts a filesystem path to your own font file, instead of a bundled `Font` case.
+
+```php
+use Yilanboy\Preview\Text\TextBlock;
+
+new TextBlock(
+    text: 'Hello',
+    font: __DIR__.'/fonts/MyFont.ttf',
+);
+```
+
+Only TrueType (`.ttf`) files are supported. OpenType (`.otf`) is rejected. A path is accepted only when **all** of
+the following hold:
+
+- the file exists and is readable;
+- the extension is `.ttf` (case-insensitive);
+- the file's first 4 bytes are the TrueType `sfnt` header (`0x00010000`) — this is what rejects an `.otf` renamed to
+  `.ttf`, whose header is `OTTO`.
+
+If the path is not a valid TrueType font, the constructor throws `InvalidArgumentException` with the message
+`The font path is not a valid TrueType font file`. Validation runs in the constructor, so an invalid `TextBlock` can
+never exist — construction fails fast.
+
+> **Security:** the font path is read straight off disk and is treated as trusted input. It must come from you, the
+> developer — never from unsanitised end-user input, which would enable arbitrary file reads and file-existence
+> probing.
+
 ## Canvas Size
 
 Pick a preset that matches where the image will be embedded. `Generator` defaults to `Size::OpenGraph`.

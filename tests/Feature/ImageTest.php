@@ -413,6 +413,21 @@ it('matches long-wrapping-text-loose snapshot', function () {
     unlink($actual);
 });
 
+it('renders with a custom font supplied as a file path', function () {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'Custom font', font: Font::Inter->path()))
+        ->save($actual);
+
+    expect(file_exists($actual))->toBeTrue()
+        ->and(filesize($actual))->toBeGreaterThan(0);
+
+    unlink($actual);
+});
+
 it('saves in the requested format', function (Format $format, string $ext) {
     $path = tempnam(sys_get_temp_dir(), 'preview_').".$ext";
 
