@@ -112,6 +112,9 @@ $generator->size(Size::Square);
 |-------------|-------------|---------------------------------------|
 | `OpenGraph` | 1200 × 630  | Facebook, generic Open Graph previews |
 | `Square`    | 1080 × 1080 | Instagram, LinkedIn square posts      |
+| `Landscape` | 1920 × 1080 | 16:9 landscape, slide / hero images   |
+| `Portrait`  | 1080 × 1920 | 9:16 vertical, stories and reels      |
+| `YouTube`   | 1280 × 720  | YouTube video thumbnails              |
 
 ## Margin
 
