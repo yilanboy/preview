@@ -11,9 +11,9 @@ final class ColorConverter
     /**
      * Check the string is a color hex format
      */
-    public static function isHexColor(string $color): bool
+    public static function isValidHex(string $hex): bool
     {
-        return preg_match('/^#[a-f0-9]{6}$/i', $color) === 1;
+        return preg_match('/^#[a-f0-9]{6}$/i', $hex) === 1;
     }
 
     /**
@@ -21,9 +21,9 @@ final class ColorConverter
      *
      * @return array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}
      */
-    public function hexToRgb(string $hex): array
+    public static function hexToRgb(string $hex): array
     {
-        if (! $this->isHexColor($hex)) {
+        if (! self::isValidHex($hex)) {
             throw new InvalidArgumentException('Invalid hex color');
         }
 
@@ -53,8 +53,8 @@ final class ColorConverter
     /**
      * Normalize a hex code or color name to a hex code.
      */
-    public function toHex(string $color): string
+    public static function toHex(string $color): string
     {
-        return $this->isHexColor($color) ? $color : $this->nameToHex($color);
+        return self::isValidHex($color) ? $color : self::nameToHex($color);
     }
 }

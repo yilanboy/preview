@@ -8,7 +8,6 @@ use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
-use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Contracts\Background;
 
 final readonly class Image implements Background
@@ -28,11 +27,11 @@ final readonly class Image implements Background
         }
     }
 
-    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
+    public function draw(GdImage $image, int $width, int $height): void
     {
         // When opacity < 1, the tint shows through the partial transparency.
         if ($this->opacity < 1.0) {
-            new Solid($this->tint)->draw($image, $width, $height, $converter);
+            new Solid($this->tint)->draw($image, $width, $height);
         }
 
         $contents = file_get_contents($this->path);

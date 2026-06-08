@@ -17,10 +17,10 @@ final readonly class Gradient implements Background
         public GradientDirection $direction = GradientDirection::Vertical,
     ) {}
 
-    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
+    public function draw(GdImage $image, int $width, int $height): void
     {
-        $from = $converter->hexToRgb($converter->toHex($this->from));
-        $to = $converter->hexToRgb($converter->toHex($this->to));
+        $from = ColorConverter::hexToRgb(ColorConverter::toHex($this->from));
+        $to = ColorConverter::hexToRgb(ColorConverter::toHex($this->to));
 
         match ($this->direction) {
             GradientDirection::Vertical => $this->fillVertical($image, $width, $height, $from, $to),

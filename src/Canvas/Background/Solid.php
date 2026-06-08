@@ -13,9 +13,9 @@ final readonly class Solid implements Background
 {
     public function __construct(public string $color) {}
 
-    public function draw(GdImage $image, int $width, int $height, ColorConverter $converter): void
+    public function draw(GdImage $image, int $width, int $height): void
     {
-        $rgb = $converter->hexToRgb($converter->toHex($this->color));
+        $rgb = ColorConverter::hexToRgb(ColorConverter::toHex($this->color));
         $allocated = imagecolorallocate($image, ...$rgb);
 
         if ($allocated === false) {

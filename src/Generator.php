@@ -31,7 +31,6 @@ final class Generator
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
-        private readonly ColorConverter $converter = new ColorConverter,
         private readonly TextBlockGroup $group = new TextBlockGroup,
     ) {
         $this->size(Size::OpenGraph);
@@ -105,7 +104,7 @@ final class Generator
             throw new RuntimeException('Failed to create image canvas');
         }
 
-        $this->background->draw($image, $this->width, $this->height, $this->converter);
+        $this->background->draw($image, $this->width, $this->height);
 
         // remove empty text blocks
         $blocks = array_filter([$this->title, $this->description]);
@@ -130,7 +129,7 @@ final class Generator
             angle: 0,
             x: $line->x,
             y: $line->y,
-            color: $this->allocateColor($image, $this->converter->toHex($line->color)),
+            color: $this->allocateColor($image, ColorConverter::toHex($line->color)),
             font_filename: $line->fontPath,
             text: $line->text,
         );
@@ -142,7 +141,7 @@ final class Generator
 
     private function allocateColor(GdImage $image, string $hex): int
     {
-        $color = imagecolorallocate($image, ...$this->converter->hexToRgb($hex));
+        $color = imagecolorallocate($image, ...ColorConverter::hexToRgb($hex));
 
         if ($color === false) {
             throw new RuntimeException('Failed to allocate color');
