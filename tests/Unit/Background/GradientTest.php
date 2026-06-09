@@ -16,3 +16,11 @@ it('stores from, to, and direction', function () {
         ->and($gradient->to)->toBe('blue')
         ->and($gradient->direction)->toBe(GradientDirection::Diagonal);
 });
+
+it('throws when the from color is invalid', function () {
+    new Gradient('not-a-color', '#3b82f6');
+})->throws(InvalidArgumentException::class, 'Invalid gradient color: not-a-color');
+
+it('throws when the to color is invalid', function () {
+    new Gradient('#10b981', 'not-a-color');
+})->throws(InvalidArgumentException::class, 'Invalid gradient color: not-a-color');

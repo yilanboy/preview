@@ -9,11 +9,35 @@ use InvalidArgumentException;
 final class ColorConverter
 {
     /**
+     * Supported color names mapped to their hex codes.
+     *
+     * @var array<string, string>
+     */
+    private const array NAMES = [
+        'red' => '#ff0000',
+        'green' => '#00ff00',
+        'blue' => '#0000ff',
+        'yellow' => '#ffff00',
+        'orange' => '#ffa500',
+        'white' => '#ffffff',
+        'black' => '#000000',
+    ];
+
+    /**
      * Check the string is a color hex format
      */
     public static function isValidHex(string $hex): bool
     {
         return preg_match('/^#[a-f0-9]{6}$/i', $hex) === 1;
+    }
+
+    /**
+     * Check the string is a supported color: either a known color name
+     * (e.g. white, black) or a valid hex code.
+     */
+    public static function isValidColor(string $color): bool
+    {
+        return self::isValidHex($color) || isset(self::NAMES[strtolower($color)]);
     }
 
     /**
@@ -38,16 +62,8 @@ final class ColorConverter
      */
     public static function nameToHex(string $word): string
     {
-        return match (strtolower($word)) {
-            'red' => '#ff0000',
-            'green' => '#00ff00',
-            'blue' => '#0000ff',
-            'yellow' => '#ffff00',
-            'orange' => '#ffa500',
-            'white' => '#ffffff',
-            'black' => '#000000',
-            default => throw new InvalidArgumentException('Invalid color name'),
-        };
+        return self::NAMES[strtolower($word)]
+            ?? throw new InvalidArgumentException('Invalid color name');
     }
 
     /**

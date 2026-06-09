@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
+use InvalidArgumentException;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Contracts\Background;
@@ -15,7 +16,15 @@ final readonly class Gradient implements Background
         public string $from,
         public string $to,
         public GradientDirection $direction = GradientDirection::Vertical,
-    ) {}
+    ) {
+        if (! ColorConverter::isValidColor($from)) {
+            throw new InvalidArgumentException("Invalid gradient color: {$from}");
+        }
+
+        if (! ColorConverter::isValidColor($to)) {
+            throw new InvalidArgumentException("Invalid gradient color: {$to}");
+        }
+    }
 
     public function draw(GdImage $image, int $width, int $height): void
     {

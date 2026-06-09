@@ -7,3 +7,13 @@ it('stores the color verbatim', function () {
 
     expect($solid->color)->toBe('#10b981');
 });
+
+it('accepts a known color name', function () {
+    $solid = new Solid('white');
+
+    expect($solid->color)->toBe('white');
+});
+
+it('throws when the color is invalid', function () {
+    new Solid('not-a-color');
+})->throws(InvalidArgumentException::class, 'Invalid color: not-a-color');

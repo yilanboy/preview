@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
+use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Contracts\Background;
 
 final readonly class Solid implements Background
 {
-    public function __construct(public string $color) {}
+    public function __construct(public string $color)
+    {
+        if (! ColorConverter::isValidColor($color)) {
+            throw new InvalidArgumentException("Invalid color: {$color}");
+        }
+    }
 
     public function draw(GdImage $image, int $width, int $height): void
     {

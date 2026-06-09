@@ -8,6 +8,7 @@ use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Contracts\Background;
 
 final readonly class Image implements Background
@@ -28,6 +29,10 @@ final readonly class Image implements Background
 
         if (! ImageValidator::isValidImage($path)) {
             throw new InvalidArgumentException("Invalid background image: {$path}");
+        }
+
+        if (! ColorConverter::isValidColor($tint)) {
+            throw new InvalidArgumentException("Invalid color: {$tint}");
         }
     }
 

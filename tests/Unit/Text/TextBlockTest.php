@@ -37,3 +37,13 @@ it('accepts a custom TrueType font path', function () {
 it('throws when the custom font path is not a valid TrueType file', function () {
     new TextBlock(text: 'Hello', font: '/no/such/font.ttf');
 })->throws(InvalidArgumentException::class, 'The font path is not a valid TrueType font file');
+
+it('accepts a known color name', function () {
+    $block = new TextBlock(text: 'Hello', color: 'white');
+
+    expect($block->color)->toBe('white');
+});
+
+it('throws when the color is invalid', function () {
+    new TextBlock(text: 'Hello', color: 'not-a-color');
+})->throws(InvalidArgumentException::class, 'Invalid color: not-a-color');

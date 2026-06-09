@@ -50,3 +50,8 @@ it('throws when opacity is above 1', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     new Image($fixture, opacity: 1.5);
 })->throws(InvalidArgumentException::class, 'Opacity must be between 0.0 and 1.0');
+
+it('throws when the tint color is invalid', function () {
+    $fixture = __DIR__.'/../../Fixtures/snapshot.png';
+    new Image($fixture, tint: 'not-a-color');
+})->throws(InvalidArgumentException::class, 'Invalid color: not-a-color');

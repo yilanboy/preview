@@ -18,6 +18,5 @@ final readonly class LinePosition
         public int $fontSize,
         public string $fontPath,
         public string $color,
-    ) {
-    }
+    ) {}
 }

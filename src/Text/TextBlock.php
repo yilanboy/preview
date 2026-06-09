@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Text;
 
 use InvalidArgumentException;
+use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
@@ -32,6 +33,10 @@ final readonly class TextBlock
     ) {
         if ($text === '') {
             throw new InvalidArgumentException('TextBlock text cannot be empty');
+        }
+
+        if (! ColorConverter::isValidColor($color)) {
+            throw new InvalidArgumentException("Invalid color: {$color}");
         }
 
         if (! $font instanceof Font && ! FontValidator::isValidTtf($font)) {
