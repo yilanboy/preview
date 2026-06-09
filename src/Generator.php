@@ -11,9 +11,9 @@ use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
-use Yilanboy\Preview\Text\PlacedTextBlock;
+use Yilanboy\Preview\Text\LinePosition;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\TextBlockGroup;
+use Yilanboy\Preview\Text\TextPlacer;
 
 final class Generator
 {
@@ -31,7 +31,7 @@ final class Generator
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
-        private readonly TextBlockGroup $group = new TextBlockGroup,
+        private readonly TextPlacer $group = new TextPlacer,
     ) {
         $this->size(Size::OpenGraph);
     }
@@ -121,7 +121,7 @@ final class Generator
     /**
      * Draw a single placed line onto the canvas at its resolved baseline.
      */
-    private function stamp(GdImage $image, PlacedTextBlock $line): void
+    private function stamp(GdImage $image, LinePosition $line): void
     {
         $result = imagettftext(
             image: $image,

@@ -5,11 +5,11 @@ use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\TextBlockGroup;
+use Yilanboy\Preview\Text\TextPlacer;
 use Yilanboy\Preview\Text\Writer;
 
 it('anchors a left-aligned block at the margin', function () {
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [
+    $lines = new TextPlacer()->place(1200, 630, 60, [
         new TextBlock(text: 'Hello', alignment: Alignment::Left),
     ]);
 
@@ -19,7 +19,7 @@ it('anchors a left-aligned block at the margin', function () {
 
 it('right-aligns a line against the far margin', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Right);
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
+    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
@@ -30,7 +30,7 @@ it('right-aligns a line against the far margin', function () {
 
 it('centers a line horizontally', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Center);
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
+    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
@@ -41,7 +41,7 @@ it('centers a line horizontally', function () {
 
 it('places a Top block one ascent below the margin', function () {
     $block = new TextBlock(text: 'Hello', position: Position::Top);
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
+    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
@@ -52,7 +52,7 @@ it('places a Top block one ascent below the margin', function () {
 });
 
 it('stacks the first block above the second when they share a position', function (Position $position) {
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [
+    $lines = new TextPlacer()->place(1200, 630, 60, [
         new TextBlock(text: 'My Blog', position: $position),
         new TextBlock(text: 'A true master is an eternal student', position: $position),
     ]);
@@ -68,7 +68,7 @@ it('steps each wrapped line down by the line advance', function () {
         text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm and a stitch in time saves nine',
         lineHeight: LineHeight::Loose,
     );
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [$block]);
+    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
 
     expect(count($lines))->toBeGreaterThan(1);
 
@@ -80,7 +80,7 @@ it('steps each wrapped line down by the line advance', function () {
 });
 
 it('passes the block color through untouched', function () {
-    $lines = new TextBlockGroup()->place(1200, 630, 60, [
+    $lines = new TextPlacer()->place(1200, 630, 60, [
         new TextBlock(text: 'Hi', color: 'white'),
     ]);
 
@@ -88,5 +88,5 @@ it('passes the block color through untouched', function () {
 });
 
 it('returns no lines when given no blocks', function () {
-    expect(new TextBlockGroup()->place(1200, 630, 60, []))->toBe([]);
+    expect(new TextPlacer()->place(1200, 630, 60, []))->toBe([]);
 });

@@ -13,9 +13,11 @@ use Yilanboy\Preview\Text\Enums\Position;
  * resolves every line to its final baseline coordinate. Pure geometry — it
  * never touches a GdImage, so its output can be asserted directly.
  */
-final readonly class TextBlockGroup
+final readonly class TextPlacer
 {
-    public function __construct(private Writer $writer = new Writer) {}
+    public function __construct(private Writer $writer = new Writer)
+    {
+    }
 
     /**
      * Resolve blocks to their placed lines on a canvas of the given size.
@@ -24,7 +26,7 @@ final readonly class TextBlockGroup
      * description) and anchored as a single group, so they never overlap.
      *
      * @param  array<int, TextBlock>  $blocks
-     * @return array<int, PlacedTextBlock>
+     * @return array<int, LinePosition>
      */
     public function place(int $width, int $height, int $margin, array $blocks): array
     {
@@ -35,8 +37,9 @@ final readonly class TextBlockGroup
         }
 
         $placed = [];
-        foreach ($positionGroups as $group) {
-            foreach ($this->placeGroup($group, $width, $height, $margin) as $line) {
+        // A single position holds a stack of one or more block layouts.
+        foreach ($positionGroups as $positionGroup) {
+            foreach ($this->placeStack($positionGroup, $width, $height, $margin) as $line) {
                 $placed[] = $line;
             }
         }
@@ -87,31 +90,34 @@ final readonly class TextBlockGroup
      * Anchor a group of stacked blocks at their shared position and place them
      * top to bottom, separated by the gap below each block.
      *
-     * @param  array<int, TextBlockLayout>  $group
-     * @return array<int, PlacedTextBlock>
+     * @param  array<int, TextBlockLayout>  $positionGroup
+     * @return array<int, LinePosition>
      */
-    private function placeGroup(array $group, int $width, int $height, int $margin): array
+    private function placeStack(array $positionGroup, int $width, int $height, int $margin): array
     {
-        $lastIndex = count($group) - 1;
+        $lastIndex = count($positionGroup) - 1;
 
+        // Measure the whole stack's height (each block's height plus the gaps
+        // between them) so resolveTop can anchor the stack as a single unit when
+        // centering or bottom-aligning. Typically a title stacked over a description.
         $groupHeight = 0;
-        foreach ($group as $i => $item) {
-            $groupHeight += $item->height;
+        foreach ($positionGroup as $i => $textBlockLayout) {
+            $groupHeight += $textBlockLayout->height;
             if ($i < $lastIndex) {
-                $groupHeight += $this->gapAfter($item->fontSize);
+                $groupHeight += $this->gapAfter($textBlockLayout->fontSize);
             }
         }
 
-        $cursor = $this->calculateCursorY($group[0], $margin, $height, $groupHeight);
+        $cursorY = $this->resolveTop($positionGroup[0]->position, $margin, $height, $groupHeight);
 
         $placed = [];
-        foreach ($group as $i => $item) {
-            foreach ($this->placeBlock($item, $cursor, $width, $margin) as $line) {
+        foreach ($positionGroup as $i => $textBlockLayout) {
+            foreach ($this->placeBlock($textBlockLayout, $cursorY, $width, $margin) as $line) {
                 $placed[] = $line;
             }
-            $cursor += $item->height;
+            $cursorY += $textBlockLayout->height;
             if ($i < $lastIndex) {
-                $cursor += $this->gapAfter($item->fontSize);
+                $cursorY += $this->gapAfter($textBlockLayout->fontSize);
             }
         }
 
@@ -122,7 +128,7 @@ final readonly class TextBlockGroup
      * Resolve a single block's lines to placed lines starting at the given top
      * edge.
      *
-     * @return array<int, PlacedTextBlock>
+     * @return array<int, LinePosition>
      */
     private function placeBlock(TextBlockLayout $item, int $top, int $width, int $margin): array
     {
@@ -130,7 +136,7 @@ final readonly class TextBlockGroup
         foreach ($item->lines as $i => $line) {
             $lineWidth = $this->writer->calculateTextBlockWidth($line, $item->fontSize, $item->fontPath);
 
-            $placed[] = new PlacedTextBlock(
+            $placed[] = new LinePosition(
                 x: $this->resolveX($item->alignment, $lineWidth, $width, $margin),
                 y: $top + $item->ascent + $i * $item->lineAdvance,
                 text: $line,
@@ -162,12 +168,12 @@ final readonly class TextBlockGroup
         };
     }
 
-    public function calculateCursorY(TextBlockLayout $group, int $margin, int $height, int $groupHeight): int
+    private function resolveTop(Position $position, int $margin, int $containerHeight, int $contentHeight): int
     {
-        return match ($group->position) {
+        return match ($position) {
             Position::Top => $margin,
-            Position::Center => intval(($height - $groupHeight) / 2),
-            Position::Bottom => $height - $margin - $groupHeight,
+            Position::Center => intval(($containerHeight - $contentHeight) / 2),
+            Position::Bottom => $containerHeight - $margin - $contentHeight,
         };
     }
 }

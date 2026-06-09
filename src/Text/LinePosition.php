@@ -9,7 +9,7 @@ namespace Yilanboy\Preview\Text;
  * The x/y are the coordinates GD's imagettftext() expects: x is the left edge
  * after alignment, y is the glyph baseline.
  */
-final readonly class PlacedTextBlock
+final readonly class LinePosition
 {
     public function __construct(
         public int $x,
@@ -18,5 +18,6 @@ final readonly class PlacedTextBlock
         public int $fontSize,
         public string $fontPath,
         public string $color,
-    ) {}
+    ) {
+    }
 }
