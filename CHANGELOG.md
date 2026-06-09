@@ -2,6 +2,50 @@
 
 All the changes to `preview` will be documented in this file.
 
+## 2.0.0-beta.1 - 2026-06-09
+
+This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
+still change before the stable `2.0.0` release.
+
+### Breaking
+
+- Raise the minimum PHP requirement from `^8.2` to `^8.4`.
+- Remove `Image\Builder` and replace it with a new `Generator` class as the main entry point. This is an API rename and
+  is not backward compatible.
+- Replace `Color\Converter` with a top-level `ColorConverter`. Its methods are now static and dependency injection has
+  been removed.
+- Remove the `backgroundColor` shortcut. Backgrounds are now configured via dedicated background classes.
+- Move background interfaces into a `Contracts` namespace (`Contracts\Background`).
+- Rework text handling: a new `TextBlock` value object (text, color, font, font size, alignment, line height, position)
+  and an internal `TextPlacer` layout engine replace the old inline text handling.
+
+### Added
+
+- Backgrounds in the new `Canvas\Background` namespace:
+    - `Solid` for a single color.
+    - `Gradient` with a `GradientDirection` enum (`Vertical`, `Horizontal`, `Diagonal`). Gradient rendering uses line
+      drawing instead of pixel-by-pixel loops for better performance.
+    - `Image` with an `ImageFit` enum (`Cover`, `Contain`, `Stretch`, `Tile`), configurable `opacity`, and a `tint`
+      color shown through partial transparency.
+    - `ImageValidator` to validate background image files.
+- Text and fonts in the `Text` namespace:
+    - `TextBlock` supporting a title and description that stack without overlapping when they share the same position.
+    - Enums: `Position` (`Top`, `Center`, `Bottom`), `Alignment` (`Left`, `Center`, `Right`), `FontSize`, `LineHeight`,
+      and `Font` for the bundled fonts.
+    - Support for custom TrueType (`.ttf`) font paths, validated by `FontValidator` (non-TTF / OpenType files are
+      rejected).
+    - Multi-language text rendering for Traditional Chinese, Simplified Chinese, and Japanese, with appropriate word and
+      character wrapping.
+- Generator presets and output:
+    - `Size` enum with dimension presets.
+    - `Margin` enum with margin presets.
+    - `Format` enum for image output format handling, integrated with `Generator`.
+- Color validation:
+    - `ColorConverter::isValidColor()` accepts a known color name (for example `white`, `black`) or a valid hex code.
+    - Color validation is enforced at construction across all color-accepting types: `Solid`, `Gradient` (both `from`
+      and `to`), `Image` (`tint`), and `TextBlock` (`color`). They throw `InvalidArgumentException` on invalid colors.
+- Snapshot/cluster-based image comparison testing, including multi-language text fixtures.
+
 ## 1.0.0 - 2024-12-21
 
 - initial release
