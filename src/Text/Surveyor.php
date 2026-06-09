@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Text;
 
+use RuntimeException;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\Position;
 
-/**
- * Places text blocks onto a canvas plane: wraps and measures each block, then
- * resolves every line to its final baseline coordinate. Pure geometry — it
- * never touches a GdImage, so its output can be asserted directly.
- */
-final readonly class TextPlacer
+final readonly class Surveyor
 {
-    public function __construct(private Writer $writer = new Writer) {}
+    public function __construct(private Tokenizer $tokenizer = new Tokenizer) {}
 
     /**
      * Resolve blocks to their placed lines on a canvas of the given size.
@@ -55,7 +51,7 @@ final readonly class TextPlacer
         $fontSize = $block->fontSize->value;
         $maxWidth = $width - $margin * 2;
 
-        $lines = $this->writer->wrapText(
+        $lines = $this->wrapText(
             text: $block->text,
             fontSize: $fontSize,
             fontPath: $fontPath,
@@ -65,11 +61,9 @@ final readonly class TextPlacer
         // baseline-to-baseline distance (CSS-style line height)
         $lineAdvance = (int) round($fontSize * $block->lineHeight->multiplier());
         // uniform vertical metrics so every line shares the same height
-        $boundingBox = $this->writer->lineBoundingBox($fontSize, $fontPath);
-        $ascent = -$boundingBox[7];  // top of glyph above baseline (bbox[7] is negative)
-        $descent = $boundingBox[1];  // below baseline
-        $height = $ascent + $descent;
-        $blockHeight = $height + $lineAdvance * (count($lines) - 1);
+        $metrics = $this->getFontMetrics($fontSize, $fontPath);
+        $ascent = $metrics->ascent;
+        $blockHeight = $metrics->height() + $lineAdvance * (count($lines) - 1);
 
         return new TextBlockLayout(
             fontPath: $fontPath,
@@ -85,6 +79,39 @@ final readonly class TextPlacer
     }
 
     /**
+     * Wrap the text to multiple lines based on the maximum width.
+     *
+     * @return array<int, string>
+     */
+    public function wrapText(
+        string $text,
+        int $fontSize,
+        string $fontPath,
+        int $maxWidth,
+    ): array {
+        $lines = [];
+        $current = '';
+        $words = $this->tokenizer->splitStringToArray($text);
+
+        foreach ($words as $word) {
+            $proposed = $current.$word;
+
+            if ($this->calculateTextBlockWidth($proposed, $fontSize, $fontPath) < $maxWidth) {
+                $current = $proposed;
+
+                continue;
+            }
+
+            $lines[] = trim($current);
+            $current = $word;
+        }
+
+        $lines[] = trim($current);
+
+        return $lines;
+    }
+
+    /**
      * Anchor a group of stacked blocks at their shared position and place them
      * top to bottom, separated by the gap below each block.
      *
@@ -97,7 +124,7 @@ final readonly class TextPlacer
 
         // Measure the whole stack's height (each block's height plus the gaps
         // between them) so resolveTop can anchor the stack as a single unit when
-        // centering or bottom-aligning. Typically a title stacked over a description.
+        // centering or bottom-aligning, typically a title stacked over a description.
         $groupHeight = 0;
         foreach ($positionGroup as $i => $textBlockLayout) {
             $groupHeight += $textBlockLayout->height;
@@ -106,7 +133,7 @@ final readonly class TextPlacer
             }
         }
 
-        $cursorY = $this->resolveTop($positionGroup[0]->position, $margin, $height, $groupHeight);
+        $cursorY = $this->resolveTop($positionGroup[0]->position, $height, $margin, $groupHeight);
 
         $placed = [];
         foreach ($positionGroup as $i => $textBlockLayout) {
@@ -132,10 +159,10 @@ final readonly class TextPlacer
     {
         $placed = [];
         foreach ($item->lines as $i => $line) {
-            $lineWidth = $this->writer->calculateTextBlockWidth($line, $item->fontSize, $item->fontPath);
+            $lineWidth = $this->calculateTextBlockWidth($line, $item->fontSize, $item->fontPath);
 
             $placed[] = new LinePosition(
-                x: $this->resolveX($item->alignment, $lineWidth, $width, $margin),
+                x: $this->resolveX($item->alignment, $width, $margin, $lineWidth),
                 y: $top + $item->ascent + $i * $item->lineAdvance,
                 text: $line,
                 fontSize: $item->fontSize,
@@ -148,6 +175,53 @@ final readonly class TextPlacer
     }
 
     /**
+     * Calculate the width of the text image.
+     */
+    public function calculateTextBlockWidth(
+        string $text,
+        int $fontSize,
+        string $fontPath,
+    ): int {
+        $boundingBox = imagettfbbox(
+            size: $fontSize,
+            angle: 0,
+            font_filename: $fontPath,
+            string: $text,
+        );
+
+        if ($boundingBox === false) {
+            throw new RuntimeException('Failed to calculate text bounding box');
+        }
+
+        return (int) $boundingBox[2] - (int) $boundingBox[0];
+    }
+
+    /**
+     * Uniform vertical metrics for a font + size, measured from a fixed
+     * reference string (independent of the rendered content) so every line
+     * shares the same height.
+     */
+    public function getFontMetrics(int $fontSize, string $fontPath): FontMetrics
+    {
+        // Reference covers ascenders, descenders, and CJK to capture full extent.
+        $bbox = imagettfbbox(
+            size: $fontSize,
+            angle: 0,
+            font_filename: $fontPath,
+            string: 'Ag字',
+        );
+
+        if ($bbox === false) {
+            throw new RuntimeException('Failed to calculate text bounding box');
+        }
+
+        return new FontMetrics(
+            ascent: (int) -$bbox[7],
+            descent: (int) $bbox[1],
+        );
+    }
+
+    /**
      * Vertical spacing placed below a block when another block is stacked
      * beneath it. Tied to the block's font size — not its line-height, which
      * governs spacing *within* a block rather than *between* blocks.
@@ -157,16 +231,16 @@ final readonly class TextPlacer
         return intval($fontSize * 0.6);
     }
 
-    private function resolveX(Alignment $alignment, int $textWidth, int $width, int $margin): int
+    private function resolveX(Alignment $alignment, int $containerWidth, int $margin, int $textWidth): int
     {
         return match ($alignment) {
             Alignment::Left => $margin,
-            Alignment::Center => intval(($width - $textWidth) / 2),
-            Alignment::Right => $width - $textWidth - $margin,
+            Alignment::Center => intval(($containerWidth - $textWidth) / 2),
+            Alignment::Right => $containerWidth - $textWidth - $margin,
         };
     }
 
-    private function resolveTop(Position $position, int $margin, int $containerHeight, int $contentHeight): int
+    private function resolveTop(Position $position, int $containerHeight, int $margin, int $contentHeight): int
     {
         return match ($position) {
             Position::Top => $margin,

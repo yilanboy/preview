@@ -11,9 +11,9 @@ use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Contracts\Background;
-use Yilanboy\Preview\Text\LinePosition;
+use Yilanboy\Preview\Text\Surveyor;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\TextPlacer;
+use Yilanboy\Preview\Text\Writer;
 
 final class Generator
 {
@@ -31,7 +31,8 @@ final class Generator
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
-        private readonly TextPlacer $group = new TextPlacer,
+        private Surveyor $surveyor = new Surveyor,
+        private Writer $writer = new Writer
     ) {
         $this->size(Size::OpenGraph);
     }
@@ -109,44 +110,12 @@ final class Generator
         // remove empty text blocks
         $blocks = array_filter([$this->title, $this->description]);
 
-        $lines = $this->group->place($this->width, $this->height, $this->margin->value, $blocks);
+        $lines = $this->surveyor->place($this->width, $this->height, $this->margin->value, $blocks);
 
         foreach ($lines as $line) {
-            $this->stamp($image, $line);
+            $this->writer->stamp($image, $line);
         }
 
         return $image;
-    }
-
-    /**
-     * Draw a single placed line onto the canvas at its resolved baseline.
-     */
-    private function stamp(GdImage $image, LinePosition $line): void
-    {
-        $result = imagettftext(
-            image: $image,
-            size: $line->fontSize,
-            angle: 0,
-            x: $line->x,
-            y: $line->y,
-            color: $this->allocateColor($image, ColorConverter::toHex($line->color)),
-            font_filename: $line->fontPath,
-            text: $line->text,
-        );
-
-        if ($result === false) {
-            throw new RuntimeException('Failed to render text onto the image');
-        }
-    }
-
-    private function allocateColor(GdImage $image, string $hex): int
-    {
-        $color = imagecolorallocate($image, ...ColorConverter::hexToRgb($hex));
-
-        if ($color === false) {
-            throw new RuntimeException('Failed to allocate color');
-        }
-
-        return $color;
     }
 }

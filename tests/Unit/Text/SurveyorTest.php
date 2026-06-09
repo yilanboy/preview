@@ -4,12 +4,11 @@ use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
+use Yilanboy\Preview\Text\Surveyor;
 use Yilanboy\Preview\Text\TextBlock;
-use Yilanboy\Preview\Text\TextPlacer;
-use Yilanboy\Preview\Text\Writer;
 
 it('anchors a left-aligned block at the margin', function () {
-    $lines = new TextPlacer()->place(1200, 630, 60, [
+    $lines = new Surveyor()->place(1200, 630, 60, [
         new TextBlock(text: 'Hello', alignment: Alignment::Left),
     ]);
 
@@ -19,40 +18,40 @@ it('anchors a left-aligned block at the margin', function () {
 
 it('right-aligns a line against the far margin', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Right);
-    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
+    $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
+    $width = new Surveyor()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
 
     expect($lines[0]->x)->toBe(1200 - $width - 60);
 });
 
 it('centers a line horizontally', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Center);
-    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
+    $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $width = new Writer()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
+    $width = new Surveyor()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
 
     expect($lines[0]->x)->toBe(intval((1200 - $width) / 2));
 });
 
 it('places a Top block one ascent below the margin', function () {
     $block = new TextBlock(text: 'Hello', position: Position::Top);
-    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
+    $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $boundingBox = new Writer()->lineBoundingBox($block->fontSize->value, $fontPath);
-    $ascent = -$boundingBox[7];  // top of glyph above baseline (bbox[7] is negative)
+    $metrics = new Surveyor()->getFontMetrics($block->fontSize->value, $fontPath);
+    $ascent = $metrics->ascent;
 
     expect($lines[0]->y)->toBe(60 + $ascent);
 });
 
 it('stacks the first block above the second when they share a position', function (Position $position) {
-    $lines = new TextPlacer()->place(1200, 630, 60, [
+    $lines = new Surveyor()->place(1200, 630, 60, [
         new TextBlock(text: 'My Blog', position: $position),
         new TextBlock(text: 'A true master is an eternal student', position: $position),
     ]);
@@ -68,7 +67,7 @@ it('steps each wrapped line down by the line advance', function () {
         text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm and a stitch in time saves nine',
         lineHeight: LineHeight::Loose,
     );
-    $lines = new TextPlacer()->place(1200, 630, 60, [$block]);
+    $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
     expect(count($lines))->toBeGreaterThan(1);
 
@@ -80,7 +79,7 @@ it('steps each wrapped line down by the line advance', function () {
 });
 
 it('passes the block color through untouched', function () {
-    $lines = new TextPlacer()->place(1200, 630, 60, [
+    $lines = new Surveyor()->place(1200, 630, 60, [
         new TextBlock(text: 'Hi', color: 'white'),
     ]);
 
@@ -88,5 +87,39 @@ it('passes the block color through untouched', function () {
 });
 
 it('returns no lines when given no blocks', function () {
-    expect(new TextPlacer()->place(1200, 630, 60, []))->toBe([]);
+    expect(new Surveyor()->place(1200, 630, 60, []))->toBe([]);
+});
+
+it('returns a single line when text fits in the max width', function () {
+    $surveyor = new Surveyor;
+    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+
+    $lines = $surveyor->wrapText(
+        text: 'Hello World',
+        fontSize: 40,
+        fontPath: $fontPath,
+        maxWidth: 1000,
+    );
+
+    expect($lines)->toBe(['Hello World']);
+});
+
+it('splits long text into multiple trimmed lines', function () {
+    $surveyor = new Surveyor;
+    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+
+    $lines = $surveyor->wrapText(
+        text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm',
+        fontSize: 50,
+        fontPath: $fontPath,
+        maxWidth: 600,
+    );
+
+    expect($lines)->toBeArray()
+        ->and(count($lines))->toBeGreaterThan(1);
+
+    foreach ($lines as $line) {
+        expect($line)->toBe(trim($line))
+            ->and($line)->not->toBe('');
+    }
 });
