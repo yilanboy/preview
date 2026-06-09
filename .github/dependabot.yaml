@@ -9,3 +9,7 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+      composer-version:
+        applies-to: version-updates
+        patterns:
+          - "*"
