@@ -85,7 +85,7 @@ $canvasMargin = isset($canvasData['margin']) ? Margin::tryFrom((int) $canvasData
 // title
 $titleText = (string) ($titleData['text'] ?? DEFAULT_TITLE_TEXT);
 $titleColor = ((string) ($titleData['color'] ?? '')) ?: DEFAULT_TITLE_COLOR;
-$titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::NotoSansTC;
+$titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::Inter;
 $titleSize = FontSize::tryFrom((int) ($titleData['fontSize'] ?? 0)) ?? FontSize::Large;
 $titleAlignment = resolveAlignment($titleData['alignment'] ?? null);
 $titlePosition = resolvePosition($titleData['position'] ?? null, Position::Center);
@@ -94,7 +94,7 @@ $titleLineHeight = resolveLineHeight($titleData['lineHeight'] ?? null);
 // description
 $descriptionText = (string) ($descriptionData['text'] ?? DEFAULT_DESC_TEXT);
 $descriptionColor = ((string) ($descriptionData['color'] ?? '')) ?: DEFAULT_DESC_COLOR;
-$descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? Font::NotoSansTC;
+$descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? Font::Inter;
 $descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Small;
 $descriptionAlignment = resolveAlignment($descriptionData['alignment'] ?? null);
 $descriptionPosition = resolvePosition($descriptionData['position'] ?? null, Position::Center);
