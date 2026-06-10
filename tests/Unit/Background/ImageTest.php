@@ -56,3 +56,17 @@ it('throws when the tint color is invalid', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     new Image($fixture, tint: 'not-a-color');
 })->throws(InvalidInput::class, 'Invalid color: not-a-color');
+
+it('decodes the source image only once across draws', function () {
+    $tmp = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+    copy(__DIR__.'/../../Fixtures/snapshot.png', $tmp);
+
+    $bg = new Image($tmp);
+    $canvas = imagecreatetruecolor(100, 100);
+    $bg->draw($canvas, 100, 100);
+
+    // A second draw can only succeed by reusing the cached decode.
+    unlink($tmp);
+
+    expect(fn () => $bg->draw($canvas, 100, 100))->not->toThrow(Exception::class);
+});

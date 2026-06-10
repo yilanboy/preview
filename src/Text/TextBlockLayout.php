@@ -14,7 +14,7 @@ use Yilanboy\Preview\Text\Enums\Position;
 final readonly class TextBlockLayout
 {
     /**
-     * @param  array<int, string>  $lines
+     * @param  array<int, MeasuredLine>  $lines
      */
     public function __construct(
         public string $fontPath,

@@ -80,7 +80,7 @@ final readonly class Surveyor
     /**
      * Wrap the text to multiple lines based on the maximum width.
      *
-     * @return array<int, string>
+     * @return array<int, MeasuredLine>
      */
     public function wrapText(
         string $text,
@@ -90,24 +90,43 @@ final readonly class Surveyor
     ): array {
         $lines = [];
         $current = '';
+        $currentWidth = null;
         $words = $this->tokenizer->splitStringToArray($text);
 
         foreach ($words as $word) {
             $proposed = $current.$word;
+            $proposedWidth = $this->calculateTextBlockWidth($proposed, $fontSize, $fontPath);
 
-            if ($this->calculateTextBlockWidth($proposed, $fontSize, $fontPath) < $maxWidth) {
+            if ($proposedWidth < $maxWidth) {
                 $current = $proposed;
+                $currentWidth = $proposedWidth;
 
                 continue;
             }
 
-            $lines[] = trim($current);
+            $lines[] = $this->finalizeLine($current, $currentWidth, $fontSize, $fontPath);
             $current = $word;
+            $currentWidth = null;
         }
 
-        $lines[] = trim($current);
+        $lines[] = $this->finalizeLine($current, $currentWidth, $fontSize, $fontPath);
 
         return $lines;
+    }
+
+    /**
+     * Finalize a wrapped line: trim it, reusing the width already measured
+     * during wrapping when trimming changed nothing.
+     */
+    private function finalizeLine(string $raw, ?int $rawWidth, int $fontSize, string $fontPath): MeasuredLine
+    {
+        $text = trim($raw);
+
+        $width = $text === $raw && $rawWidth !== null
+            ? $rawWidth
+            : $this->calculateTextBlockWidth($text, $fontSize, $fontPath);
+
+        return new MeasuredLine($text, $width);
     }
 
     /**
@@ -158,12 +177,10 @@ final readonly class Surveyor
     {
         $placed = [];
         foreach ($item->lines as $i => $line) {
-            $lineWidth = $this->calculateTextBlockWidth($line, $item->fontSize, $item->fontPath);
-
             $placed[] = new LinePosition(
-                x: $this->resolveX($item->alignment, $width, $margin, $lineWidth),
+                x: $this->resolveX($item->alignment, $width, $margin, $line->width),
                 y: $top + $item->ascent + $i * $item->lineAdvance,
-                text: $line,
+                text: $line->text,
                 fontSize: $item->fontSize,
                 fontPath: $item->fontPath,
                 color: $item->color,

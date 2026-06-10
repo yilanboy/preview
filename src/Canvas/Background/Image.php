@@ -10,13 +10,15 @@ use Yilanboy\Preview\ColorConverter;
 use Yilanboy\Preview\Exceptions\InvalidInput;
 use Yilanboy\Preview\Exceptions\RenderFailure;
 
-final readonly class Image implements Background
+final class Image implements Background
 {
+    private ?GdImage $decoded = null;
+
     public function __construct(
-        public string $path,
-        public ImageFit $fit = ImageFit::Cover,
-        public float $opacity = 1.0,
-        public string $tint = '#000000',
+        public readonly string $path,
+        public readonly ImageFit $fit = ImageFit::Cover,
+        public readonly float $opacity = 1.0,
+        public readonly string $tint = '#000000',
     ) {
         if ($opacity < 0.0 || $opacity > 1.0) {
             throw new InvalidInput('Opacity must be between 0.0 and 1.0');
@@ -42,17 +44,7 @@ final readonly class Image implements Background
             new Solid($this->tint)->draw($image, $width, $height);
         }
 
-        $contents = file_get_contents($this->path);
-
-        if ($contents === false) {
-            throw new RenderFailure("Failed to read background image: {$this->path}");
-        }
-
-        $src = imagecreatefromstring($contents);
-
-        if ($src === false) {
-            throw new RenderFailure("Failed to decode background image: {$this->path}");
-        }
+        $src = $this->decoded();
 
         $srcWidth = imagesx($src);
         $srcHeight = imagesy($src);
@@ -68,6 +60,31 @@ final readonly class Image implements Background
             ImageFit::Tile => $this->tile($image, $src, $width, $height,
                 $srcWidth, $srcHeight, $pct),
         };
+    }
+
+    /**
+     * Decode the source image once and cache it, so rendering many canvases
+     * from the same background doesn't re-read and re-decode the file.
+     */
+    private function decoded(): GdImage
+    {
+        if ($this->decoded !== null) {
+            return $this->decoded;
+        }
+
+        $contents = file_get_contents($this->path);
+
+        if ($contents === false) {
+            throw new RenderFailure("Failed to read background image: {$this->path}");
+        }
+
+        $src = imagecreatefromstring($contents);
+
+        if ($src === false) {
+            throw new RenderFailure("Failed to decode background image: {$this->path}");
+        }
+
+        return $this->decoded = $src;
     }
 
     private function stretch(

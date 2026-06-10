@@ -108,7 +108,9 @@ it('returns a single line when text fits in the max width', function () {
         maxWidth: 1000,
     );
 
-    expect($lines)->toBe(['Hello World']);
+    expect($lines)->toHaveCount(1)
+        ->and($lines[0]->text)->toBe('Hello World')
+        ->and($lines[0]->width)->toBe($surveyor->calculateTextBlockWidth('Hello World', 40, $fontPath));
 });
 
 it('splits long text into multiple trimmed lines', function () {
@@ -126,7 +128,8 @@ it('splits long text into multiple trimmed lines', function () {
         ->and(count($lines))->toBeGreaterThan(1);
 
     foreach ($lines as $line) {
-        expect($line)->toBe(trim($line))
-            ->and($line)->not->toBe('');
+        expect($line->text)->toBe(trim($line->text))
+            ->and($line->text)->not->toBe('')
+            ->and($line->width)->toBe($surveyor->calculateTextBlockWidth($line->text, 50, $fontPath));
     }
 });
