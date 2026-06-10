@@ -18,7 +18,7 @@ use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\TextBlock;
 
-const DEFAULT_TITLE_TEXT = 'My Blog';
+const DEFAULT_TITLE_TEXT = 'Preview';
 const DEFAULT_TITLE_COLOR = '#ffffff';
 const DEFAULT_DESC_TEXT = 'A simple PHP package to create preview image';
 const DEFAULT_DESC_COLOR = '#ffffff';
@@ -80,20 +80,22 @@ $canvasSize = array_find(
     fn (Size $case) => $case->name === $sizeName,
 ) ?? Size::OpenGraph;
 
-$canvasMargin = Margin::tryFrom((int) ($canvasData['margin'] ?? 0)) ?? Margin::Medium;
+$canvasMargin = isset($canvasData['margin']) ? Margin::tryFrom((int) $canvasData['margin']) : Margin::Medium;
 
+// title
 $titleText = (string) ($titleData['text'] ?? DEFAULT_TITLE_TEXT);
 $titleColor = ((string) ($titleData['color'] ?? '')) ?: DEFAULT_TITLE_COLOR;
 $titleFont = Font::tryFrom((string) ($titleData['font'] ?? '')) ?? Font::NotoSansTC;
 $titleSize = FontSize::tryFrom((int) ($titleData['fontSize'] ?? 0)) ?? FontSize::Large;
 $titleAlignment = resolveAlignment($titleData['alignment'] ?? null);
-$titlePosition = resolvePosition($titleData['position'] ?? null, Position::Top);
+$titlePosition = resolvePosition($titleData['position'] ?? null, Position::Center);
 $titleLineHeight = resolveLineHeight($titleData['lineHeight'] ?? null);
 
+// description
 $descriptionText = (string) ($descriptionData['text'] ?? DEFAULT_DESC_TEXT);
 $descriptionColor = ((string) ($descriptionData['color'] ?? '')) ?: DEFAULT_DESC_COLOR;
 $descriptionFont = Font::tryFrom((string) ($descriptionData['font'] ?? '')) ?? Font::NotoSansTC;
-$descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Medium;
+$descriptionSize = FontSize::tryFrom((int) ($descriptionData['fontSize'] ?? 0)) ?? FontSize::Small;
 $descriptionAlignment = resolveAlignment($descriptionData['alignment'] ?? null);
 $descriptionPosition = resolvePosition($descriptionData['position'] ?? null, Position::Center);
 $descriptionLineHeight = resolveLineHeight($descriptionData['lineHeight'] ?? null);
