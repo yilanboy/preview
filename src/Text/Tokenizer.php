@@ -17,12 +17,12 @@ final readonly class Tokenizer
      *
      * @return array<string>
      */
-    public function splitStringToArray(string $input): array
+    public function tokenize(string $input): array
     {
         $matches = null;
 
         preg_match_all('/[\p{Han}\p{Hiragana}\p{Katakana}]|[a-zA-Z0-9]+|\s|[^\p{Han}\p{Hiragana}\p{Katakana}\s\w]/u', $input, $matches);
 
-        return $matches[0];
+        return array_values(array_filter($matches[0], fn ($token) => $token !== "\r"));
     }
 }

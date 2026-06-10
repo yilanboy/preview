@@ -133,3 +133,41 @@ it('splits long text into multiple trimmed lines', function () {
             ->and($line->width)->toBe($surveyor->calculateTextBlockWidth($line->text, 50, $fontPath));
     }
 });
+
+it('wraps text when containing manual newlines', function () {
+    $surveyor = new Surveyor;
+    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+
+    $lines = $surveyor->wrapText(
+        text: "Line 1\nLine 2\n\nLine 4",
+        fontSize: 40,
+        fontPath: $fontPath,
+        maxWidth: 1000,
+    );
+
+    expect($lines)->toHaveCount(4)
+        ->and($lines[0]->text)->toBe('Line 1')
+        ->and($lines[1]->text)->toBe('Line 2')
+        ->and($lines[2]->text)->toBe('')
+        ->and($lines[3]->text)->toBe('Line 4');
+});
+
+it('wraps text when containing CRLF newlines', function () {
+    $surveyor = new Surveyor;
+    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+
+    $lines = $surveyor->wrapText(
+        text: "Line 1\r\nLine 2\r\n\r\nLine 4",
+        fontSize: 40,
+        fontPath: $fontPath,
+        maxWidth: 1000,
+    );
+
+    expect($lines)->toHaveCount(4)
+        ->and($lines[0]->text)->toBe('Line 1')
+        ->and($lines[1]->text)->toBe('Line 2')
+        ->and($lines[2]->text)->toBe('')
+        ->and($lines[3]->text)->toBe('Line 4');
+});
+
+

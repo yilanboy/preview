@@ -91,9 +91,17 @@ final readonly class Surveyor
         $lines = [];
         $current = '';
         $currentWidth = null;
-        $words = $this->tokenizer->splitStringToArray($text);
+        $words = $this->tokenizer->tokenize($text);
 
         foreach ($words as $word) {
+            if ($word === "\n") {
+                $lines[] = $this->finalizeLine($current, $currentWidth, $fontSize, $fontPath);
+                $current = '';
+                $currentWidth = null;
+
+                continue;
+            }
+
             $proposed = $current.$word;
             $proposedWidth = $this->calculateTextBlockWidth($proposed, $fontSize, $fontPath);
 
