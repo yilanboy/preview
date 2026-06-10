@@ -12,6 +12,7 @@ enum Size
     case Portrait;
     case YouTube;
 
+    /** @return positive-int */
     public function width(): int
     {
         return match ($this) {
@@ -22,6 +23,7 @@ enum Size
         };
     }
 
+    /** @return positive-int */
     public function height(): int
     {
         return match ($this) {

@@ -7,6 +7,7 @@ namespace Yilanboy\Preview\Text;
 use RuntimeException;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\Enums\FontSize;
 use Yilanboy\Preview\Text\Enums\Position;
 
 final readonly class Surveyor
@@ -48,7 +49,7 @@ final readonly class Surveyor
     private function measure(TextBlock $block, int $width, int $margin): TextBlockLayout
     {
         $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
-        $fontSize = $block->fontSize->value;
+        $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
         $maxWidth = $width - $margin * 2;
 
         $lines = $this->wrapText(

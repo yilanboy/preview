@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Text;
 
-final class FontValidator
+final readonly class FontValidator
 {
     // sfnt version tag (hex) of a TrueType font. OpenType ('OTTO') is excluded.
     private const string VALID_TTF_HEADER = '00010000';

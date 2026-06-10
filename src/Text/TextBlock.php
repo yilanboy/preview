@@ -15,6 +15,8 @@ use Yilanboy\Preview\Text\Enums\Position;
 final readonly class TextBlock
 {
     /**
+     * @param  FontSize|int  $fontSize  A FontSize preset, or a custom size in
+     *                                  pixels. Must be at least 1.
      * @param  Font|string  $font  A bundled Font, or a path to a custom font
      *                             file. Only TrueType (.ttf) files are
      *                             supported; OpenType (.otf) is rejected. The
@@ -25,7 +27,7 @@ final readonly class TextBlock
     public function __construct(
         public string $text,
         public string $color = '#030712',
-        public FontSize $fontSize = FontSize::Medium,
+        public FontSize|int $fontSize = FontSize::Medium,
         public Font|string $font = Font::NotoSansTC,
         public Alignment $alignment = Alignment::Left,
         public LineHeight $lineHeight = LineHeight::Normal,
@@ -37,6 +39,10 @@ final readonly class TextBlock
 
         if (! ColorConverter::isValidColor($color)) {
             throw new InvalidArgumentException("Invalid color: {$color}");
+        }
+
+        if (is_int($fontSize) && $fontSize < 1) {
+            throw new InvalidArgumentException('Font size must be at least 1');
         }
 
         if (! $font instanceof Font && ! FontValidator::isValidTtf($font)) {

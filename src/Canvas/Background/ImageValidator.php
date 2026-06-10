@@ -6,7 +6,7 @@ namespace Yilanboy\Preview\Canvas\Background;
 
 use finfo;
 
-final class ImageValidator
+final readonly class ImageValidator
 {
     public static function isValidImage(string $filePath): bool
     {

@@ -38,6 +38,19 @@ it('throws when the custom font path is not a valid TrueType file', function () 
     new TextBlock(text: 'Hello', font: '/no/such/font.ttf');
 })->throws(InvalidArgumentException::class, 'The font path is not a valid TrueType font file');
 
+it('accepts a custom integer font size', function () {
+    $block = new TextBlock(text: 'Hello', fontSize: 42);
+
+    expect($block->fontSize)->toBe(42);
+});
+
+it('throws when the custom font size is below 1', function (int $fontSize) {
+    new TextBlock(text: 'Hello', fontSize: $fontSize);
+})->with([
+    'zero' => [0],
+    'negative' => [-5],
+])->throws(InvalidArgumentException::class, 'Font size must be at least 1');
+
 it('accepts a known color name', function () {
     $block = new TextBlock(text: 'Hello', color: 'white');
 

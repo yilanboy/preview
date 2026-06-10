@@ -54,6 +54,13 @@ $red  = new TextBlock(text: 'Hello', color: 'red');
 $big  = new TextBlock(text: 'Hello', fontSize: FontSize::Huge);
 ```
 
+If no `FontSize` preset fits, pass a custom size in pixels instead. It must be at least `1`, otherwise an
+`InvalidArgumentException` is thrown.
+
+```php
+$custom = new TextBlock(text: 'Hello', fontSize: 42);
+```
+
 Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 
 | Enum         | Cases                                                                                              |
@@ -115,6 +122,13 @@ $generator->size(Size::Square);
 | `Landscape` | 1920 × 1080 | 16:9 landscape, slide / hero images   |
 | `Portrait`  | 1080 × 1920 | 9:16 vertical, stories and reels      |
 | `YouTube`   | 1280 × 720  | YouTube video thumbnails              |
+
+If no preset fits, set the width and height yourself. Both must be at least `1`, otherwise an
+`InvalidArgumentException` is thrown. `size()` and `dimensions()` set the same canvas size, so the last call wins.
+
+```php
+$generator->dimensions(width: 800, height: 418);
+```
 
 ## Margin
 

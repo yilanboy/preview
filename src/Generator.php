@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yilanboy\Preview;
 
 use GdImage;
+use InvalidArgumentException;
 use RuntimeException;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Format;
@@ -17,8 +18,10 @@ use Yilanboy\Preview\Text\Writer;
 
 final class Generator
 {
+    /** @var positive-int */
     private int $width;
 
+    /** @var positive-int */
     private int $height;
 
     private Margin $margin = Margin::Medium;
@@ -31,8 +34,8 @@ final class Generator
 
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
-        private Surveyor $surveyor = new Surveyor,
-        private Writer $writer = new Writer
+        private readonly Surveyor $surveyor = new Surveyor,
+        private readonly Writer $writer = new Writer
     ) {
         $this->size(Size::OpenGraph);
     }
@@ -41,6 +44,18 @@ final class Generator
     {
         $this->width = $size->width();
         $this->height = $size->height();
+
+        return $this;
+    }
+
+    public function dimensions(int $width, int $height): self
+    {
+        if ($width < 1 || $height < 1) {
+            throw new InvalidArgumentException('Width and height must be at least 1');
+        }
+
+        $this->width = $width;
+        $this->height = $height;
 
         return $this;
     }
@@ -95,10 +110,6 @@ final class Generator
 
     private function render(): GdImage
     {
-        if ($this->width < 1 || $this->height < 1) {
-            throw new RuntimeException('Width and height must be at least 1');
-        }
-
         $image = imagecreatetruecolor($this->width, $this->height);
 
         if ($image === false) {
@@ -110,7 +121,8 @@ final class Generator
         // remove empty text blocks
         $blocks = array_filter([$this->title, $this->description]);
 
-        $lines = $this->surveyor->place($this->width, $this->height, $this->margin->value, $blocks);
+        $lines = $this->surveyor->place($this->width, $this->height,
+            $this->margin->value, $blocks);
 
         foreach ($lines as $line) {
             $this->writer->stamp($image, $line);

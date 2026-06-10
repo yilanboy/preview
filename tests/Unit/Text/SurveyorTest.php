@@ -2,6 +2,7 @@
 
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\Enums\FontSize;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\Surveyor;
@@ -22,7 +23,9 @@ it('right-aligns a line against the far margin', function () {
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $width = new Surveyor()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
+    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+
+    $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
 
     expect($lines[0]->x)->toBe(1200 - $width - 60);
 });
@@ -33,7 +36,9 @@ it('centers a line horizontally', function () {
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $width = new Surveyor()->calculateTextBlockWidth('Hello', $block->fontSize->value, $fontPath);
+    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+
+    $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
 
     expect($lines[0]->x)->toBe(intval((1200 - $width) / 2));
 });
@@ -44,7 +49,9 @@ it('places a Top block one ascent below the margin', function () {
 
     $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
 
-    $metrics = new Surveyor()->getFontMetrics($block->fontSize->value, $fontPath);
+    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+
+    $metrics = new Surveyor()->getFontMetrics($fontSize, $fontPath);
     $ascent = $metrics->ascent;
 
     expect($lines[0]->y)->toBe(60 + $ascent);
@@ -71,7 +78,9 @@ it('steps each wrapped line down by the line advance', function () {
 
     expect(count($lines))->toBeGreaterThan(1);
 
-    $advance = (int) round($block->fontSize->value * LineHeight::Loose->multiplier());
+    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+
+    $advance = (int) round($fontSize * LineHeight::Loose->multiplier());
 
     for ($i = 1; $i < count($lines); $i++) {
         expect($lines[$i]->y - $lines[$i - 1]->y)->toBe($advance);
