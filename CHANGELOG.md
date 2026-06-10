@@ -2,6 +2,19 @@
 
 All the changes to `preview` will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- `Generator::dimensions(int $width, int $height)` to set a custom canvas size instead of a `Size` preset. Throws an
+  `InvalidInput` exception when either value is below `1`.
+- `TextBlock` now accepts a custom integer font size in pixels (`FontSize|int`) instead of only `FontSize` presets.
+  Throws an `InvalidInput` exception when the value is below `1`.
+- Package-level exceptions in the new `Exceptions` namespace: invalid input now throws `InvalidInput` and render-time
+  GD failures throw `RenderFailure`, both implementing the `PreviewException` marker interface. Backward compatible:
+  they extend the SPL `InvalidArgumentException` / `RuntimeException` the library threw before, so existing catch
+  blocks keep working.
+
 ## 2.0.0-beta.1 - 2026-06-09
 
 This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may

@@ -2,6 +2,7 @@
 
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 use Yilanboy\Preview\Generator;
 
 it('applies a size preset', function () {
@@ -31,7 +32,7 @@ it('rejects dimensions below 1', function (int $width, int $height) {
 })->with([
     'zero width' => [0, 400],
     'negative height' => [800, -1],
-])->throws(InvalidArgumentException::class, 'Width and height must be at least 1');
+])->throws(InvalidInput::class, 'Width and height must be at least 1');
 
 it('defaults to a medium margin', function () {
     $generator = new Generator;

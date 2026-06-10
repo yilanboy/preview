@@ -1,6 +1,7 @@
 <?php
 
 use Yilanboy\Preview\ColorConverter;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('can convert hex to rgb array', function () {
     expect(ColorConverter::hexToRgb('#ffffff'))->toBe([255, 255, 255])
@@ -9,7 +10,7 @@ it('can convert hex to rgb array', function () {
 
 it('will throw invalid argument exception, if hex format is not correct', function () {
     ColorConverter::hexToRgb('invalid');
-})->throws(InvalidArgumentException::class, 'Invalid hex color');
+})->throws(InvalidInput::class, 'Invalid hex color');
 
 it('can convert color name to hex', function () {
     expect(ColorConverter::nameToHex('white'))->toBe('#ffffff')
@@ -18,7 +19,7 @@ it('can convert color name to hex', function () {
 
 it('will throw invalid argument exception, if color name is not correct', function () {
     ColorConverter::nameToHex('invalid');
-})->throws(InvalidArgumentException::class, 'Invalid color name');
+})->throws(InvalidInput::class, 'Invalid color name');
 
 it('can check string is correct hex format', function () {
     expect(ColorConverter::isValidHex('#ffffff'))->toBeTrue()

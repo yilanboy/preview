@@ -1,8 +1,6 @@
 <?php
 
 use Yilanboy\Preview\Text\Enums\Alignment;
-use Yilanboy\Preview\Text\Enums\Font;
-use Yilanboy\Preview\Text\Enums\FontSize;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\Surveyor;
@@ -21,9 +19,9 @@ it('right-aligns a line against the far margin', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Right);
     $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
-    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+    $fontPath = $block->fontPath();
 
-    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+    $fontSize = $block->fontSizePixels();
 
     $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
 
@@ -34,9 +32,9 @@ it('centers a line horizontally', function () {
     $block = new TextBlock(text: 'Hello', alignment: Alignment::Center);
     $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
-    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+    $fontPath = $block->fontPath();
 
-    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+    $fontSize = $block->fontSizePixels();
 
     $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
 
@@ -47,9 +45,9 @@ it('places a Top block one ascent below the margin', function () {
     $block = new TextBlock(text: 'Hello', position: Position::Top);
     $lines = new Surveyor()->place(1200, 630, 60, [$block]);
 
-    $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
+    $fontPath = $block->fontPath();
 
-    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+    $fontSize = $block->fontSizePixels();
 
     $metrics = new Surveyor()->getFontMetrics($fontSize, $fontPath);
     $ascent = $metrics->ascent;
@@ -78,7 +76,7 @@ it('steps each wrapped line down by the line advance', function () {
 
     expect(count($lines))->toBeGreaterThan(1);
 
-    $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+    $fontSize = $block->fontSizePixels();
 
     $advance = (int) round($fontSize * LineHeight::Loose->multiplier());
 

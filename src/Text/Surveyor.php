@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Text;
 
-use RuntimeException;
+use Yilanboy\Preview\Exceptions\RenderFailure;
 use Yilanboy\Preview\Text\Enums\Alignment;
-use Yilanboy\Preview\Text\Enums\Font;
-use Yilanboy\Preview\Text\Enums\FontSize;
 use Yilanboy\Preview\Text\Enums\Position;
 
 final readonly class Surveyor
@@ -48,8 +46,8 @@ final readonly class Surveyor
      */
     private function measure(TextBlock $block, int $width, int $margin): TextBlockLayout
     {
-        $fontPath = $block->font instanceof Font ? $block->font->path() : $block->font;
-        $fontSize = $block->fontSize instanceof FontSize ? $block->fontSize->value : $block->fontSize;
+        $fontPath = $block->fontPath();
+        $fontSize = $block->fontSizePixels();
         $maxWidth = $width - $margin * 2;
 
         $lines = $this->wrapText(
@@ -191,7 +189,7 @@ final readonly class Surveyor
         );
 
         if ($boundingBox === false) {
-            throw new RuntimeException('Failed to calculate text bounding box');
+            throw new RenderFailure('Failed to calculate text bounding box');
         }
 
         return (int) $boundingBox[2] - (int) $boundingBox[0];
@@ -213,7 +211,7 @@ final readonly class Surveyor
         );
 
         if ($bbox === false) {
-            throw new RuntimeException('Failed to calculate text bounding box');
+            throw new RenderFailure('Failed to calculate text bounding box');
         }
 
         return new FontMetrics(

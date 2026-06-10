@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Yilanboy\Preview;
 
 use GdImage;
-use InvalidArgumentException;
-use RuntimeException;
+use Yilanboy\Preview\Canvas\Background\Background;
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
-use Yilanboy\Preview\Contracts\Background;
+use Yilanboy\Preview\Exceptions\InvalidInput;
+use Yilanboy\Preview\Exceptions\RenderFailure;
 use Yilanboy\Preview\Text\Surveyor;
 use Yilanboy\Preview\Text\TextBlock;
 use Yilanboy\Preview\Text\Writer;
@@ -42,16 +42,13 @@ final class Generator
 
     public function size(Size $size): self
     {
-        $this->width = $size->width();
-        $this->height = $size->height();
-
-        return $this;
+        return $this->dimensions($size->width(), $size->height());
     }
 
     public function dimensions(int $width, int $height): self
     {
         if ($width < 1 || $height < 1) {
-            throw new InvalidArgumentException('Width and height must be at least 1');
+            throw new InvalidInput('Width and height must be at least 1');
         }
 
         $this->width = $width;
@@ -113,7 +110,7 @@ final class Generator
         $image = imagecreatetruecolor($this->width, $this->height);
 
         if ($image === false) {
-            throw new RuntimeException('Failed to create image canvas');
+            throw new RenderFailure('Failed to create image canvas');
         }
 
         $this->background->draw($image, $this->width, $this->height);

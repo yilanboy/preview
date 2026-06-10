@@ -2,6 +2,7 @@
 
 use Yilanboy\Preview\Canvas\Background\Gradient;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('defaults to vertical direction', function () {
     $gradient = new Gradient('#10b981', '#3b82f6');
@@ -19,8 +20,8 @@ it('stores from, to, and direction', function () {
 
 it('throws when the from color is invalid', function () {
     new Gradient('not-a-color', '#3b82f6');
-})->throws(InvalidArgumentException::class, 'Invalid gradient color: not-a-color');
+})->throws(InvalidInput::class, 'Invalid gradient color: not-a-color');
 
 it('throws when the to color is invalid', function () {
     new Gradient('#10b981', 'not-a-color');
-})->throws(InvalidArgumentException::class, 'Invalid gradient color: not-a-color');
+})->throws(InvalidInput::class, 'Invalid gradient color: not-a-color');

@@ -2,10 +2,11 @@
 
 use Yilanboy\Preview\Canvas\Background\Image;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('throws when the file does not exist', function () {
     new Image('/this/path/does/not/exist.png');
-})->throws(InvalidArgumentException::class, 'Background image not found');
+})->throws(InvalidInput::class, 'Background image not found');
 
 it('throws when the file exists but is not a valid image', function () {
     $fake = tempnam(sys_get_temp_dir(), 'preview_').'.png';
@@ -16,7 +17,7 @@ it('throws when the file exists but is not a valid image', function () {
     } finally {
         unlink($fake);
     }
-})->throws(InvalidArgumentException::class, 'Invalid background image');
+})->throws(InvalidInput::class, 'Invalid background image');
 
 it('defaults to Cover fit', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
@@ -44,14 +45,14 @@ it('defaults opacity to 1.0 and tint to #000000', function () {
 it('throws when opacity is below 0', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     new Image($fixture, opacity: -0.1);
-})->throws(InvalidArgumentException::class, 'Opacity must be between 0.0 and 1.0');
+})->throws(InvalidInput::class, 'Opacity must be between 0.0 and 1.0');
 
 it('throws when opacity is above 1', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     new Image($fixture, opacity: 1.5);
-})->throws(InvalidArgumentException::class, 'Opacity must be between 0.0 and 1.0');
+})->throws(InvalidInput::class, 'Opacity must be between 0.0 and 1.0');
 
 it('throws when the tint color is invalid', function () {
     $fixture = __DIR__.'/../../Fixtures/snapshot.png';
     new Image($fixture, tint: 'not-a-color');
-})->throws(InvalidArgumentException::class, 'Invalid color: not-a-color');
+})->throws(InvalidInput::class, 'Invalid color: not-a-color');

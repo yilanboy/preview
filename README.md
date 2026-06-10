@@ -55,7 +55,7 @@ $big  = new TextBlock(text: 'Hello', fontSize: FontSize::Huge);
 ```
 
 If no `FontSize` preset fits, pass a custom size in pixels instead. It must be at least `1`, otherwise an
-`InvalidArgumentException` is thrown.
+`InvalidInput` exception is thrown.
 
 ```php
 $custom = new TextBlock(text: 'Hello', fontSize: 42);
@@ -97,7 +97,7 @@ the following hold:
 - the file's first 4 bytes are the TrueType `sfnt` header (`0x00010000`) — this is what rejects an `.otf` renamed to
   `.ttf`, whose header is `OTTO`.
 
-If the path is not a valid TrueType font, the constructor throws `InvalidArgumentException` with the message
+If the path is not a valid TrueType font, the constructor throws an `InvalidInput` exception with the message
 `The font path is not a valid TrueType font file`. Validation runs in the constructor, so an invalid `TextBlock` can
 never exist — construction fails fast.
 
@@ -124,7 +124,7 @@ $generator->size(Size::Square);
 | `YouTube`   | 1280 × 720  | YouTube video thumbnails              |
 
 If no preset fits, set the width and height yourself. Both must be at least `1`, otherwise an
-`InvalidArgumentException` is thrown. `size()` and `dimensions()` set the same canvas size, so the last call wins.
+`InvalidInput` exception is thrown. `size()` and `dimensions()` set the same canvas size, so the last call wins.
 
 ```php
 $generator->dimensions(width: 800, height: 418);
@@ -219,6 +219,23 @@ first so the tint color shows through the partially transparent image — use it
 defaults to `#000000`.
 
 See all three modes interactively in the playground (next section).
+
+## Exceptions
+
+Everything the library throws lives under `Yilanboy\Preview\Exceptions`. Invalid input (bad colors, font paths,
+dimensions, etc.) throws `InvalidInput`, and render-time GD failures throw `RenderFailure`. Both implement the
+`PreviewException` marker interface and still extend their SPL parents (`InvalidArgumentException` /
+`RuntimeException`), so existing catch blocks keep working.
+
+```php
+use Yilanboy\Preview\Exceptions\PreviewException;
+
+try {
+    $generator->save($path);
+} catch (PreviewException $e) {
+    // anything this library threw
+}
+```
 
 ## Start a Local Server to Show the Image
 

@@ -9,6 +9,7 @@ use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
@@ -129,7 +130,7 @@ $imageFit = match ($imageFitName) {
     default => ImageFit::Cover,
 };
 // Clamp opacity to [0.0, 1.0] so an out-of-range POST value (e.g., from a tampered
-// form) doesn't trigger the InvalidArgumentException from the Image constructor.
+// form) doesn't trigger the InvalidInput exception from the Image constructor.
 $imageOpacityRaw = $imageData['opacity'] ?? null;
 $imageOpacity = $imageOpacityRaw === null || $imageOpacityRaw === '' ? 1.0 : (float) $imageOpacityRaw;
 $imageOpacity = max(0.0, min(1.0, $imageOpacity));
@@ -156,7 +157,7 @@ try {
         )),
         default => $generator->background(new Solid($solidColor)),
     };
-} catch (InvalidArgumentException $e) {
+} catch (InvalidInput $e) {
     $backgroundError = $e->getMessage();
     $generator->background(new Solid($solidColor !== '' ? $solidColor : DEFAULT_BG_COLOR));
 }

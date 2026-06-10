@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Text;
 
 use GdImage;
-use RuntimeException;
 use Yilanboy\Preview\ColorConverter;
+use Yilanboy\Preview\Exceptions\RenderFailure;
 
 final readonly class Writer
 {
@@ -27,7 +27,7 @@ final readonly class Writer
         );
 
         if ($result === false) {
-            throw new RuntimeException('Failed to render text onto the image');
+            throw new RenderFailure('Failed to render text onto the image');
         }
     }
 
@@ -36,7 +36,7 @@ final readonly class Writer
         $color = imagecolorallocate($image, ...ColorConverter::hexToRgb($hex));
 
         if ($color === false) {
-            throw new RuntimeException('Failed to allocate color');
+            throw new RenderFailure('Failed to allocate color');
         }
 
         return $color;

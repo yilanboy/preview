@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Text;
 
-use InvalidArgumentException;
 use Yilanboy\Preview\ColorConverter;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
@@ -34,19 +34,29 @@ final readonly class TextBlock
         public Position $position = Position::Center,
     ) {
         if ($text === '') {
-            throw new InvalidArgumentException('TextBlock text cannot be empty');
+            throw new InvalidInput('TextBlock text cannot be empty');
         }
 
         if (! ColorConverter::isValidColor($color)) {
-            throw new InvalidArgumentException("Invalid color: {$color}");
+            throw new InvalidInput("Invalid color: {$color}");
         }
 
         if (is_int($fontSize) && $fontSize < 1) {
-            throw new InvalidArgumentException('Font size must be at least 1');
+            throw new InvalidInput('Font size must be at least 1');
         }
 
         if (! $font instanceof Font && ! FontValidator::isValidTtf($font)) {
-            throw new InvalidArgumentException('The font path is not a valid TrueType font file');
+            throw new InvalidInput('The font path is not a valid TrueType font file');
         }
+    }
+
+    public function fontSizePixels(): int
+    {
+        return $this->fontSize instanceof FontSize ? $this->fontSize->value : $this->fontSize;
+    }
+
+    public function fontPath(): string
+    {
+        return $this->font instanceof Font ? $this->font->path() : $this->font;
     }
 }

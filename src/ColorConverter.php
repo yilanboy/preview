@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview;
 
-use InvalidArgumentException;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 
 final class ColorConverter
 {
@@ -48,7 +48,7 @@ final class ColorConverter
     public static function hexToRgb(string $hex): array
     {
         if (! self::isValidHex($hex)) {
-            throw new InvalidArgumentException('Invalid hex color');
+            throw new InvalidInput('Invalid hex color');
         }
 
         /** @var array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>} $rgb */
@@ -63,7 +63,7 @@ final class ColorConverter
     public static function nameToHex(string $word): string
     {
         return self::NAMES[strtolower($word)]
-            ?? throw new InvalidArgumentException('Invalid color name');
+            ?? throw new InvalidInput('Invalid color name');
     }
 
     /**

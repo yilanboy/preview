@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Canvas\Background;
 
 use GdImage;
-use InvalidArgumentException;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\ColorConverter;
-use Yilanboy\Preview\Contracts\Background;
+use Yilanboy\Preview\Exceptions\InvalidInput;
 
 final readonly class Gradient implements Background
 {
@@ -18,11 +17,11 @@ final readonly class Gradient implements Background
         public GradientDirection $direction = GradientDirection::Vertical,
     ) {
         if (! ColorConverter::isValidColor($from)) {
-            throw new InvalidArgumentException("Invalid gradient color: {$from}");
+            throw new InvalidInput("Invalid gradient color: {$from}");
         }
 
         if (! ColorConverter::isValidColor($to)) {
-            throw new InvalidArgumentException("Invalid gradient color: {$to}");
+            throw new InvalidInput("Invalid gradient color: {$to}");
         }
     }
 
@@ -32,9 +31,12 @@ final readonly class Gradient implements Background
         $to = ColorConverter::hexToRgb(ColorConverter::toHex($this->to));
 
         match ($this->direction) {
-            GradientDirection::Vertical => $this->fillVertical($image, $width, $height, $from, $to),
-            GradientDirection::Horizontal => $this->fillHorizontal($image, $width, $height, $from, $to),
-            GradientDirection::Diagonal => $this->fillDiagonal($image, $width, $height, $from, $to),
+            GradientDirection::Vertical => $this->fillVertical($image, $width,
+                $height, $from, $to),
+            GradientDirection::Horizontal => $this->fillHorizontal($image,
+                $width, $height, $from, $to),
+            GradientDirection::Diagonal => $this->fillDiagonal($image, $width,
+                $height, $from, $to),
         };
     }
 
@@ -42,13 +44,19 @@ final readonly class Gradient implements Background
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $from
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $to
      */
-    private function fillVertical(GdImage $image, int $width, int $height, array $from, array $to): void
-    {
+    private function fillVertical(
+        GdImage $image,
+        int $width,
+        int $height,
+        array $from,
+        array $to
+    ): void {
         $denominator = max($height - 1, 1);
 
         for ($y = 0; $y < $height; $y++) {
             $color = $this->interpolate($from, $to, $y / $denominator);
-            imageline(image: $image, x1: 0, y1: $y, x2: $width - 1, y2: $y, color: $color);
+            imageline(image: $image, x1: 0, y1: $y, x2: $width - 1, y2: $y,
+                color: $color);
         }
     }
 
@@ -56,13 +64,19 @@ final readonly class Gradient implements Background
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $from
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $to
      */
-    private function fillHorizontal(GdImage $image, int $width, int $height, array $from, array $to): void
-    {
+    private function fillHorizontal(
+        GdImage $image,
+        int $width,
+        int $height,
+        array $from,
+        array $to
+    ): void {
         $denominator = max($width - 1, 1);
 
         for ($x = 0; $x < $width; $x++) {
             $color = $this->interpolate($from, $to, $x / $denominator);
-            imageline(image: $image, x1: $x, y1: 0, x2: $x, y2: $height - 1, color: $color);
+            imageline(image: $image, x1: $x, y1: 0, x2: $x, y2: $height - 1,
+                color: $color);
         }
     }
 
@@ -70,8 +84,13 @@ final readonly class Gradient implements Background
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $from
      * @param  array{0: int<0, 255>, 1: int<0, 255>, 2: int<0, 255>}  $to
      */
-    private function fillDiagonal(GdImage $image, int $width, int $height, array $from, array $to): void
-    {
+    private function fillDiagonal(
+        GdImage $image,
+        int $width,
+        int $height,
+        array $from,
+        array $to
+    ): void {
         $denominator = max($width + $height - 2, 1);
 
         for ($k = 0; $k <= $width + $height - 2; $k++) {
@@ -82,7 +101,8 @@ final readonly class Gradient implements Background
             $x2 = max(0, $k - ($height - 1));
             $y2 = $k - $x2;
 
-            imageline(image: $image, x1: $x1, y1: $y1, x2: $x2, y2: $y2, color: $color);
+            imageline(image: $image, x1: $x1, y1: $y1, x2: $x2, y2: $y2,
+                color: $color);
         }
     }
 
