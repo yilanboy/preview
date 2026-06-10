@@ -15,16 +15,17 @@ Then create an image generator.
 ```php
 use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Margin;
+use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Size;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
-use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\TextBlock;
 
-new Generator
+new Generator()
     ->size(Size::OpenGraph)
     ->margin(Margin::Medium)
+    ->format(Format::PNG)
     ->background(new Solid('#777bb3'))
     ->title(new TextBlock(
         text: 'Preview',
