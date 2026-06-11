@@ -29,3 +29,17 @@ it('can wrap sentence that mix English and Chinese', function () {
     expect($tokenizer->tokenize('Hello 世界！'))
         ->toBe(['Hello', ' ', '世', '界', '！']);
 });
+
+it('normalizes CRLF and bare CR newlines to LF', function () {
+    $tokenizer = new Tokenizer;
+
+    expect($tokenizer->tokenize("a\r\nb\rc"))
+        ->toBe(['a', "\n", 'b', "\n", 'c']);
+});
+
+it('trims surrounding whitespace and newlines', function () {
+    $tokenizer = new Tokenizer;
+
+    expect($tokenizer->tokenize("\n  Hello  \n"))
+        ->toBe(['Hello']);
+});

@@ -169,5 +169,3 @@ it('wraps text when containing CRLF newlines', function () {
         ->and($lines[2]->text)->toBe('')
         ->and($lines[3]->text)->toBe('Line 4');
 });
-
-

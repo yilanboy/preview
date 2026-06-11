@@ -19,10 +19,15 @@ final readonly class Tokenizer
      */
     public function tokenize(string $input): array
     {
+        // Normalize line endings (CRLF and bare CR → LF) and strip surrounding
+        // whitespace, so wrapping never yields leading or trailing empty lines.
+        $input = trim(str_replace(["\r\n", "\r"], "\n", $input));
+
         $matches = null;
 
-        preg_match_all('/[\p{Han}\p{Hiragana}\p{Katakana}]|[a-zA-Z0-9]+|\s|[^\p{Han}\p{Hiragana}\p{Katakana}\s\w]/u', $input, $matches);
+        preg_match_all('/[\p{Han}\p{Hiragana}\p{Katakana}]|[a-zA-Z0-9]+|\s|[^\p{Han}\p{Hiragana}\p{Katakana}\s\w]/u',
+            $input, $matches);
 
-        return array_values(array_filter($matches[0], fn ($token) => $token !== "\r"));
+        return $matches[0];
     }
 }
