@@ -80,7 +80,8 @@ it('steps each wrapped line down by the line advance', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $advance = (int) round($fontSize * LineHeight::Loose->multiplier());
+    $metrics = new Surveyor()->getFontMetrics($fontSize, $block->fontPath());
+    $advance = (int) round($metrics->lineHeight() * LineHeight::Loose->multiplier());
 
     for ($i = 1; $i < count($lines); $i++) {
         expect($lines[$i]->y - $lines[$i - 1]->y)->toBe($advance);

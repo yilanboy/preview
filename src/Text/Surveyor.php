@@ -58,11 +58,13 @@ final readonly class Surveyor
             maxWidth: $maxWidth,
         );
 
-        // baseline-to-baseline distance (CSS-style line height)
-        $lineAdvance = (int) round($fontSize * $block->lineHeight->multiplier());
         // uniform vertical metrics so every line shares the same height
         $metrics = $this->getFontMetrics($fontSize, $fontPath);
         $ascent = $metrics->ascent;
+        // baseline-to-baseline distance: the font's natural line box scaled by
+        // the chosen multiplier. A multiplier of 1.0 reproduces single-line
+        // spacing, so adjacent lines never overlap whatever the multiplier or font.
+        $lineAdvance = (int) round($metrics->lineHeight() * $block->lineHeight->multiplier());
         $blockHeight = $metrics->height() + $lineAdvance * (count($lines) - 1);
 
         return new MeasuredBlock(
@@ -228,28 +230,83 @@ final readonly class Surveyor
     }
 
     /**
-     * Uniform vertical metrics for a font + size, measured from a fixed
-     * reference string (independent of the rendered content) so every line
-     * shares the same height.
+     * Uniform vertical metrics for a font + size, read from the font's own
+     * declared line box (its `head` and `hhea` tables) rather than probed from
+     * glyphs. This is independent of the rendered content, so every line shares
+     * the same height, and it is unaffected by missing glyphs — e.g. CJK
+     * characters set in a Latin-only font no longer inflate the line height.
      */
     public function getFontMetrics(int $fontSize, string $fontPath): FontMetrics
     {
-        // Reference covers ascenders, descenders, and CJK to capture full extent.
-        $bbox = imagettfbbox(
-            size: $fontSize,
-            angle: 0,
-            font_filename: $fontPath,
-            string: 'Ag字',
-        );
-
-        if ($bbox === false) {
-            throw new RenderFailure('Failed to calculate text bounding box');
-        }
+        [$unitsPerEm, $ascender, $descender, $lineGap] = $this->parseLineMetrics($fontPath);
+        $scale = $fontSize / $unitsPerEm;
 
         return new FontMetrics(
-            ascent: (int) -$bbox[7],
-            descent: (int) $bbox[1],
+            ascent: (int) round($ascender * $scale),
+            descent: (int) round(-$descender * $scale),
+            lineGap: (int) round($lineGap * $scale),
         );
+    }
+
+    /**
+     * Read a font's declared vertical metrics from its sfnt tables, returning
+     * [unitsPerEm, ascender, descender, lineGap] in font design units. The
+     * descender is negative (it sits below the baseline). Cached per font path,
+     * since these values are size-independent.
+     *
+     * @return array{int, int, int, int}
+     */
+    private function parseLineMetrics(string $fontPath): array
+    {
+        static $cache = [];
+
+        if (isset($cache[$fontPath])) {
+            return $cache[$fontPath];
+        }
+
+        $handle = fopen($fontPath, 'rb');
+        if ($handle === false) {
+            throw new RenderFailure("Failed to open font file: {$fontPath}");
+        }
+
+        try {
+            // Offset table: numTables is a uint16 at byte 4. Each of the
+            // following 16-byte records carries a 4-char tag and the table's
+            // absolute offset (uint32 at byte 8 of the record).
+            $numTables = unpack('n', substr((string) fread($handle, 12), 4, 2))[1];
+            $directory = (string) fread($handle, $numTables * 16);
+
+            $offsets = [];
+            for ($i = 0; $i < $numTables; $i++) {
+                $record = substr($directory, $i * 16, 16);
+                $tag = substr($record, 0, 4);
+                if ($tag === 'head' || $tag === 'hhea') {
+                    $offsets[$tag] = unpack('N', substr($record, 8, 4))[1];
+                }
+            }
+
+            if (! isset($offsets['head'], $offsets['hhea'])) {
+                throw new RenderFailure("Font is missing required head/hhea tables: {$fontPath}");
+            }
+
+            // head: unitsPerEm is a uint16 at byte 18.
+            fseek($handle, $offsets['head'] + 18);
+            $unitsPerEm = unpack('n', (string) fread($handle, 2))[1];
+
+            // hhea: ascender, descender, lineGap are three int16 (FWORD) at byte 4.
+            fseek($handle, $offsets['hhea'] + 4);
+            $values = unpack('n3', (string) fread($handle, 6));
+            $toSigned = fn (int $v): int => $v >= 0x8000 ? $v - 0x10000 : $v;
+
+            return $cache[$fontPath] = [
+                $unitsPerEm,
+                $toSigned($values[1]),
+                $toSigned($values[2]),
+                $toSigned($values[3]),
+            ];
+        } finally {
+            fclose($handle);
+        }
     }
 
     /**

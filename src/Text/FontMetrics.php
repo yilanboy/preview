@@ -12,13 +12,24 @@ final readonly class FontMetrics
     public function __construct(
         public int $ascent,
         public int $descent,
+        public int $lineGap = 0,
     ) {}
 
     /**
-     * Total line height (ascent + descent).
+     * Glyph extent (ascent + descent) — a single line's actual vertical pixel
+     * bounds.
      */
     public function height(): int
     {
         return $this->ascent + $this->descent;
+    }
+
+    /**
+     * The font's natural single-line box (glyph extent plus the designer's
+     * line gap) — the base that a LineHeight multiplier scales.
+     */
+    public function lineHeight(): int
+    {
+        return $this->ascent + $this->descent + $this->lineGap;
     }
 }
