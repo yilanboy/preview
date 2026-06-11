@@ -2,7 +2,10 @@
 
 All the changes to `preview` will be documented in this file.
 
-## Unreleased
+## 2.0.0-beta.2 - 2026-06-11
+
+This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
+still change before the stable `2.0.0` release.
 
 ### Added
 
@@ -14,6 +17,14 @@ All the changes to `preview` will be documented in this file.
   GD failures throw `RenderFailure`, both implementing the `PreviewException` marker interface. Backward compatible:
   they extend the SPL `InvalidArgumentException` / `RuntimeException` the library threw before, so existing catch
   blocks keep working.
+
+### Changed
+
+- Text lines are measured once during wrapping: `Surveyor::wrapText()` now returns `MeasuredLine` objects (text plus
+  pixel width) instead of plain strings, and placement reuses the stored widths rather than re-measuring each line
+  with `imagettfbbox`.
+- `Image` backgrounds decode the source file once and cache the bitmap, so rendering many canvases from the same
+  background no longer re-reads and re-decodes the file on every draw.
 
 ## 2.0.0-beta.1 - 2026-06-09
 
