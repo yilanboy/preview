@@ -26,6 +26,5 @@ final readonly class MeasuredBlock
         public Position $position,
         public string $color,
         public Alignment $alignment,
-    ) {
-    }
+    ) {}
 }
