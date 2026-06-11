@@ -9,7 +9,7 @@ namespace Yilanboy\Preview\Text;
  * The x/y are the coordinates GD's imagettftext() expects: x is the left edge
  * after alignment, y is the glyph baseline.
  */
-final readonly class LinePosition
+final readonly class PositionedLine
 {
     public function __construct(
         public int $x,

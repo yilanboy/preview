@@ -13,7 +13,7 @@ final readonly class Writer
     /**
      * Draw a single placed line onto the canvas at its resolved baseline.
      */
-    public function stamp(GdImage $image, LinePosition $line): void
+    public function stamp(GdImage $image, PositionedLine $line): void
     {
         $result = imagettftext(
             image: $image,

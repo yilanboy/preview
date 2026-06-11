@@ -23,7 +23,7 @@ it('right-aligns a line against the far margin', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
+    $width = new Surveyor()->calculateLineWidth('Hello', $fontSize, $fontPath);
 
     expect($lines[0]->x)->toBe(1200 - $width - 60);
 });
@@ -36,7 +36,7 @@ it('centers a line horizontally', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $width = new Surveyor()->calculateTextBlockWidth('Hello', $fontSize, $fontPath);
+    $width = new Surveyor()->calculateLineWidth('Hello', $fontSize, $fontPath);
 
     expect($lines[0]->x)->toBe(intval((1200 - $width) / 2));
 });
@@ -55,17 +55,19 @@ it('places a Top block one ascent below the margin', function () {
     expect($lines[0]->y)->toBe(60 + $ascent);
 });
 
-it('stacks the first block above the second when they share a position', function (Position $position) {
-    $lines = new Surveyor()->place(1200, 630, 60, [
-        new TextBlock(text: 'My Blog', position: $position),
-        new TextBlock(text: 'A true master is an eternal student', position: $position),
-    ]);
+it('stacks the first block above the second when they share a position',
+    function (Position $position) {
+        $lines = new Surveyor()->place(1200, 630, 60, [
+            new TextBlock(text: 'My Blog', position: $position),
+            new TextBlock(text: 'A true master is an eternal student',
+                position: $position),
+        ]);
 
-    // Lines are emitted top to bottom: [0] is the single-line title, [1] is the
-    // topmost description line. The title sits entirely above the description.
-    expect(count($lines))->toBeGreaterThanOrEqual(2)
-        ->and($lines[0]->y)->toBeLessThan($lines[1]->y);
-})->with([Position::Top, Position::Center, Position::Bottom]);
+        // Lines are emitted top to bottom: [0] is the single-line title, [1] is the
+        // topmost description line. The title sits entirely above the description.
+        expect(count($lines))->toBeGreaterThanOrEqual(2)
+            ->and($lines[0]->y)->toBeLessThan($lines[1]->y);
+    })->with([Position::Top, Position::Center, Position::Bottom]);
 
 it('steps each wrapped line down by the line advance', function () {
     $block = new TextBlock(
@@ -108,9 +110,12 @@ it('returns a single line when text fits in the max width', function () {
         maxWidth: 1000,
     );
 
-    expect($lines)->toHaveCount(1)
-        ->and($lines[0]->text)->toBe('Hello World')
-        ->and($lines[0]->width)->toBe($surveyor->calculateTextBlockWidth('Hello World', 40, $fontPath));
+    expect($lines)
+        ->toHaveCount(1)
+        ->and($lines[0]->text)
+        ->toBe('Hello World')
+        ->and($lines[0]->width)
+        ->toBe($surveyor->calculateLineWidth('Hello World', 40, $fontPath));
 });
 
 it('splits long text into multiple trimmed lines', function () {
@@ -130,7 +135,8 @@ it('splits long text into multiple trimmed lines', function () {
     foreach ($lines as $line) {
         expect($line->text)->toBe(trim($line->text))
             ->and($line->text)->not->toBe('')
-            ->and($line->width)->toBe($surveyor->calculateTextBlockWidth($line->text, 50, $fontPath));
+            ->and($line->width)->toBe($surveyor->calculateLineWidth($line->text,
+                50, $fontPath));
     }
 });
 

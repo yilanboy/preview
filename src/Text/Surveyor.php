@@ -10,7 +10,8 @@ use Yilanboy\Preview\Text\Enums\Position;
 
 final readonly class Surveyor
 {
-    public function __construct(private Tokenizer $tokenizer = new Tokenizer) {}
+    public function __construct(private Tokenizer $tokenizer = new Tokenizer
+    ) {}
 
     /**
      * Resolve blocks to their placed lines on a canvas of the given size.
@@ -19,11 +20,11 @@ final readonly class Surveyor
      * description) and anchored as a single group, so they never overlap.
      *
      * @param  array<int, TextBlock>  $blocks
-     * @return array<int, LinePosition>
+     * @return array<int, PositionedLine>
      */
     public function place(int $width, int $height, int $margin, array $blocks): array
     {
-        /* @var array<string<'TOP', 'CENTER', 'BOTTOM'>, array<TextBlockLayout>> $positionGroups */
+        /* @var array<string<'TOP', 'CENTER', 'BOTTOM'>, array<MeasuredBlock>> $positionGroups */
         $positionGroups = [];
         foreach ($blocks as $block) {
             $positionGroups[$block->position->name][] = $this->measure($block, $width, $margin);
@@ -44,7 +45,7 @@ final readonly class Surveyor
      * Measure a block: wrap its text and compute the metrics needed to place
      * and render it.
      */
-    private function measure(TextBlock $block, int $width, int $margin): TextBlockLayout
+    private function measure(TextBlock $block, int $width, int $margin): MeasuredBlock
     {
         $fontPath = $block->fontPath();
         $fontSize = $block->fontSizePixels();
@@ -64,7 +65,7 @@ final readonly class Surveyor
         $ascent = $metrics->ascent;
         $blockHeight = $metrics->height() + $lineAdvance * (count($lines) - 1);
 
-        return new TextBlockLayout(
+        return new MeasuredBlock(
             fontPath: $fontPath,
             fontSize: $fontSize,
             lines: $lines,
@@ -103,7 +104,7 @@ final readonly class Surveyor
             }
 
             $proposed = $current.$word;
-            $proposedWidth = $this->calculateTextBlockWidth($proposed, $fontSize, $fontPath);
+            $proposedWidth = $this->calculateLineWidth($proposed, $fontSize, $fontPath);
 
             if ($proposedWidth < $maxWidth) {
                 $current = $proposed;
@@ -132,7 +133,7 @@ final readonly class Surveyor
 
         $width = $text === $raw && $rawWidth !== null
             ? $rawWidth
-            : $this->calculateTextBlockWidth($text, $fontSize, $fontPath);
+            : $this->calculateLineWidth($text, $fontSize, $fontPath);
 
         return new MeasuredLine($text, $width);
     }
@@ -141,8 +142,8 @@ final readonly class Surveyor
      * Anchor a group of stacked blocks at their shared position and place them
      * top to bottom, separated by the gap below each block.
      *
-     * @param  array<int, TextBlockLayout>  $positionGroup
-     * @return array<int, LinePosition>
+     * @param  array<int, MeasuredBlock>  $positionGroup
+     * @return array<int, PositionedLine>
      */
     private function placeStack(array $positionGroup, int $width, int $height, int $margin): array
     {
@@ -166,6 +167,7 @@ final readonly class Surveyor
             foreach ($this->placeBlock($textBlockLayout, $cursorY, $width, $margin) as $line) {
                 $placed[] = $line;
             }
+
             $cursorY += $textBlockLayout->height;
             if ($i < $lastIndex) {
                 $cursorY += $this->gapAfter($textBlockLayout->fontSize);
@@ -179,14 +181,19 @@ final readonly class Surveyor
      * Resolve a single block's lines to placed lines starting at the given top
      * edge.
      *
-     * @return array<int, LinePosition>
+     * @return array<int, PositionedLine>
      */
-    private function placeBlock(TextBlockLayout $item, int $top, int $width, int $margin): array
+    private function placeBlock(MeasuredBlock $item, int $top, int $width, int $margin): array
     {
         $placed = [];
         foreach ($item->lines as $i => $line) {
-            $placed[] = new LinePosition(
-                x: $this->resolveX($item->alignment, $width, $margin, $line->width),
+            $placed[] = new PositionedLine(
+                x: $this->resolveX(
+                    $item->alignment,
+                    $width,
+                    $margin,
+                    $line->width
+                ),
                 y: $top + $item->ascent + $i * $item->lineAdvance,
                 text: $line->text,
                 fontSize: $item->fontSize,
@@ -201,7 +208,7 @@ final readonly class Surveyor
     /**
      * Calculate the width of the text image.
      */
-    public function calculateTextBlockWidth(
+    public function calculateLineWidth(
         string $text,
         int $fontSize,
         string $fontPath,

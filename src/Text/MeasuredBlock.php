@@ -11,7 +11,7 @@ use Yilanboy\Preview\Text\Enums\Position;
  * A measured TextBlock: wrapped lines plus the vertical metrics needed to place
  * and render it on the canvas.
  */
-final readonly class TextBlockLayout
+final readonly class MeasuredBlock
 {
     /**
      * @param  array<int, MeasuredLine>  $lines
@@ -26,5 +26,6 @@ final readonly class TextBlockLayout
         public Position $position,
         public string $color,
         public Alignment $alignment,
-    ) {}
+    ) {
+    }
 }
