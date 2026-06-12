@@ -238,25 +238,21 @@ final readonly class Surveyor
      */
     public function getFontMetrics(int $fontSize, string $fontPath): FontMetrics
     {
-        [$unitsPerEm, $ascender, $descender, $lineGap] = $this->parseLineMetrics($fontPath);
-        $scale = $fontSize / $unitsPerEm;
+        $lineMetrics = $this->parseLineMetrics($fontPath);
+        $scale = $fontSize / $lineMetrics->unitsPerEm;
 
         return new FontMetrics(
-            ascent: (int) round($ascender * $scale),
-            descent: (int) round(-$descender * $scale),
-            lineGap: (int) round($lineGap * $scale),
+            ascent: (int) round($lineMetrics->ascender * $scale),
+            descent: (int) round(-$lineMetrics->descender * $scale),
+            lineGap: (int) round($lineMetrics->lineGap * $scale),
         );
     }
 
     /**
-     * Read a font's declared vertical metrics from its sfnt tables, returning
-     * [unitsPerEm, ascender, descender, lineGap] in font design units. The
-     * descender is negative (it sits below the baseline). Cached per font path,
-     * since these values are size-independent.
-     *
-     * @return array{int, int, int, int}
+     * Read a font's declared vertical metrics from its sfnt tables. Cached
+     * per font path, since these values are size-independent.
      */
-    private function parseLineMetrics(string $fontPath): array
+    private function parseLineMetrics(string $fontPath): LineMetrics
     {
         static $cache = [];
 
@@ -298,12 +294,12 @@ final readonly class Surveyor
             $values = unpack('n3', (string) fread($handle, 6));
             $toSigned = fn (int $v): int => $v >= 0x8000 ? $v - 0x10000 : $v;
 
-            return $cache[$fontPath] = [
-                $unitsPerEm,
-                $toSigned($values[1]),
-                $toSigned($values[2]),
-                $toSigned($values[3]),
-            ];
+            return $cache[$fontPath] = new LineMetrics(
+                unitsPerEm: $unitsPerEm,
+                ascender: $toSigned($values[1]),
+                descender: $toSigned($values[2]),
+                lineGap: $toSigned($values[3]),
+            );
         } finally {
             fclose($handle);
         }
