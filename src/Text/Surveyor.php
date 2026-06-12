@@ -59,13 +59,19 @@ final readonly class Surveyor
         );
 
         // uniform vertical metrics so every line shares the same height
-        $metrics = $this->getFontMetrics($fontSize, $fontPath);
-        $ascent = $metrics->ascent;
+        $metrics = $this->parseLineMetrics($fontPath);
+        $scale = $fontSize / $metrics->unitsPerEm;
+        $ascent = (int) round($metrics->ascender * $scale);
+        $descent = (int) round(-$metrics->descender * $scale);
+        $lineGap = (int) round($metrics->lineGap * $scale);
+        $height = $ascent + $descent;
+        $lineHeight = $ascent + $descent + $lineGap;
+
         // baseline-to-baseline distance: the font's natural line box scaled by
         // the chosen multiplier. A multiplier of 1.0 reproduces single-line
         // spacing, so adjacent lines never overlap whatever the multiplier or font.
-        $lineAdvance = (int) round($metrics->lineHeight() * $block->lineHeight->multiplier());
-        $blockHeight = $metrics->height() + $lineAdvance * (count($lines) - 1);
+        $lineAdvance = (int) round($lineHeight * $block->lineHeight->multiplier());
+        $blockHeight = $height + $lineAdvance * (count($lines) - 1);
 
         return new MeasuredBlock(
             fontPath: $fontPath,
@@ -230,29 +236,10 @@ final readonly class Surveyor
     }
 
     /**
-     * Uniform vertical metrics for a font + size, read from the font's own
-     * declared line box (its `head` and `hhea` tables) rather than probed from
-     * glyphs. This is independent of the rendered content, so every line shares
-     * the same height, and it is unaffected by missing glyphs — e.g. CJK
-     * characters set in a Latin-only font no longer inflate the line height.
-     */
-    public function getFontMetrics(int $fontSize, string $fontPath): FontMetrics
-    {
-        $lineMetrics = $this->parseLineMetrics($fontPath);
-        $scale = $fontSize / $lineMetrics->unitsPerEm;
-
-        return new FontMetrics(
-            ascent: (int) round($lineMetrics->ascender * $scale),
-            descent: (int) round(-$lineMetrics->descender * $scale),
-            lineGap: (int) round($lineMetrics->lineGap * $scale),
-        );
-    }
-
-    /**
      * Read a font's declared vertical metrics from its sfnt tables. Cached
      * per font path, since these values are size-independent.
      */
-    private function parseLineMetrics(string $fontPath): LineMetrics
+    public function parseLineMetrics(string $fontPath): LineMetrics
     {
         static $cache = [];
 

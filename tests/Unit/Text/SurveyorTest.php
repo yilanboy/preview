@@ -49,8 +49,9 @@ it('places a Top block one ascent below the margin', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $metrics = new Surveyor()->getFontMetrics($fontSize, $fontPath);
-    $ascent = $metrics->ascent;
+    $metrics = new Surveyor()->parseLineMetrics($fontPath);
+    $scale = $fontSize / $metrics->unitsPerEm;
+    $ascent = (int) round($metrics->ascender * $scale);
 
     expect($lines[0]->y)->toBe(60 + $ascent);
 });
@@ -80,8 +81,12 @@ it('steps each wrapped line down by the line advance', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $metrics = new Surveyor()->getFontMetrics($fontSize, $block->fontPath());
-    $advance = (int) round($metrics->lineHeight() * LineHeight::Loose->multiplier());
+    $metrics = new Surveyor()->parseLineMetrics($block->fontPath());
+    $scale = $fontSize / $metrics->unitsPerEm;
+    $lineHeight = (int) round($metrics->ascender * $scale)
+        + (int) round(-$metrics->descender * $scale)
+        + (int) round($metrics->lineGap * $scale);
+    $advance = (int) round($lineHeight * LineHeight::Loose->multiplier());
 
     for ($i = 1; $i < count($lines); $i++) {
         expect($lines[$i]->y - $lines[$i - 1]->y)->toBe($advance);
