@@ -269,7 +269,10 @@ final readonly class Surveyor
             // Offset table: numTables is a uint16 at byte 4. Each of the
             // following 16-byte records carries a 4-char tag and the table's
             // absolute offset (uint32 at byte 8 of the record).
-            $numTables = unpack('n', substr((string) fread($handle, 12), 4, 2))[1];
+            $numTables = $this->unpackInts('n', substr((string) fread($handle, 12), 4, 2), $fontPath)[1];
+            if ($numTables < 1) {
+                throw new RenderFailure("Font has no sfnt tables: {$fontPath}");
+            }
             $directory = (string) fread($handle, $numTables * 16);
 
             $offsets = [];
@@ -277,7 +280,7 @@ final readonly class Surveyor
                 $record = substr($directory, $i * 16, 16);
                 $tag = substr($record, 0, 4);
                 if ($tag === 'head' || $tag === 'hhea') {
-                    $offsets[$tag] = unpack('N', substr($record, 8, 4))[1];
+                    $offsets[$tag] = $this->unpackInts('N', substr($record, 8, 4), $fontPath)[1];
                 }
             }
 
@@ -287,11 +290,11 @@ final readonly class Surveyor
 
             // head: unitsPerEm is a uint16 at byte 18.
             fseek($handle, $offsets['head'] + 18);
-            $unitsPerEm = unpack('n', (string) fread($handle, 2))[1];
+            $unitsPerEm = $this->unpackInts('n', (string) fread($handle, 2), $fontPath)[1];
 
             // hhea: ascender, descender, lineGap are three int16 (FWORD) at byte 4.
             fseek($handle, $offsets['hhea'] + 4);
-            $values = unpack('n3', (string) fread($handle, 6));
+            $values = $this->unpackInts('n3', (string) fread($handle, 6), $fontPath);
             $toSigned = fn (int $v): int => $v >= 0x8000 ? $v - 0x10000 : $v;
 
             return $cache[$fontPath] = new LineMetrics(
@@ -303,6 +306,23 @@ final readonly class Surveyor
         } finally {
             fclose($handle);
         }
+    }
+
+    /**
+     * unpack() with the failure case turned into a RenderFailure, so callers
+     * can index into the result directly.
+     *
+     * @return array<int, int>
+     */
+    private function unpackInts(string $format, string $data, string $fontPath): array
+    {
+        $values = unpack($format, $data);
+        if ($values === false) {
+            throw new RenderFailure("Failed to parse font tables: {$fontPath}");
+        }
+
+        /** @var array<int, int> $values */
+        return $values;
     }
 
     /**
