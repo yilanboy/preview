@@ -2,6 +2,34 @@
 
 All the changes to `preview` will be documented in this file.
 
+## 2.0.0-beta.4 - 2026-06-13
+
+This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
+still change before the stable `2.0.0` release.
+
+### Changed
+
+- Flatten background namespaces: moved background components (`Background`, `Solid`, `Gradient`, `Image`, `ImageValidator`) directly into the `Yilanboy\Preview\Canvas` namespace, removing the nested `Background` namespace.
+- Extract font reading logic: moved TrueType sfnt table parsing from `Surveyor` to a new `FontReader` class, injecting it into `Surveyor`'s constructor.
+- Consolidate metric classes: removed `FontMetrics` and unified vertical metrics layout calculation directly using the `LineMetrics` class.
+
+### Fixed
+
+- Improve font parsing robustness: validate sfnt tables and handle binary unpacking errors gracefully using a new `unpackInts` helper that throws `RenderFailure` on corrupt font files.
+
+## 2.0.0-beta.3 - 2026-06-12
+
+This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
+still change before the stable `2.0.0` release.
+
+### Added
+
+- A new `LineMetrics` value object to encapsulate vertical font metrics (`unitsPerEm`, `ascender`, `descender`, `lineGap`).
+
+### Fixed
+
+- Accurate line height calculation: derive line heights directly from sfnt tables (`head` and `hhea`) instead of guessing via character bounding box probing.
+
 ## 2.0.0-beta.2 - 2026-06-11
 
 This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
