@@ -1,12 +1,12 @@
 <?php
 
-use Yilanboy\Preview\Canvas\Background\Gradient;
-use Yilanboy\Preview\Canvas\Background\Image as ImageBackground;
-use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Canvas\Gradient;
+use Yilanboy\Preview\Canvas\Image as ImageBackground;
+use Yilanboy\Preview\Canvas\Solid;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\Font;

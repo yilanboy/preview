@@ -1,7 +1,7 @@
 <?php
 
-use Yilanboy\Preview\Canvas\Background\Gradient;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
+use Yilanboy\Preview\Canvas\Gradient;
 use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('defaults to vertical direction', function () {

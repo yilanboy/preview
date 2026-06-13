@@ -1,6 +1,6 @@
 <?php
 
-use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Solid;
 use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('stores the color verbatim', function () {

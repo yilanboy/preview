@@ -1,7 +1,7 @@
 <?php
 
-use Yilanboy\Preview\Canvas\Background\Image;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
+use Yilanboy\Preview\Canvas\Image;
 use Yilanboy\Preview\Exceptions\InvalidInput;
 
 it('throws when the file does not exist', function () {

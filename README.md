@@ -13,7 +13,7 @@ composer require yilanboy/preview
 Then create an image generator.
 
 ```php
-use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Solid;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Size;
@@ -179,7 +179,7 @@ package.
 **Solid** — a flat color.
 
 ```php
-use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Solid;
 
 $generator->background(new Solid('#777bb3'));
 ```
@@ -187,7 +187,7 @@ $generator->background(new Solid('#777bb3'));
 **Gradient** — two colors interpolated across the canvas.
 
 ```php
-use Yilanboy\Preview\Canvas\Background\Gradient;
+use Yilanboy\Preview\Canvas\Gradient;
 use Yilanboy\Preview\Canvas\Enums\GradientDirection;
 
 $generator->background(new Gradient(
@@ -202,7 +202,7 @@ $generator->background(new Gradient(
 **Image** — render a bitmap behind your text.
 
 ```php
-use Yilanboy\Preview\Canvas\Background\Image;
+use Yilanboy\Preview\Canvas\Image;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;
 
 $generator->background(new Image(

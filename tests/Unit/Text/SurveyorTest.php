@@ -3,6 +3,7 @@
 use Yilanboy\Preview\Text\Enums\Alignment;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
+use Yilanboy\Preview\Text\FontReader;
 use Yilanboy\Preview\Text\Surveyor;
 use Yilanboy\Preview\Text\TextBlock;
 
@@ -49,7 +50,7 @@ it('places a Top block one ascent below the margin', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $metrics = new Surveyor()->parseLineMetrics($fontPath);
+    $metrics = new FontReader()->parseLineMetrics($fontPath);
     $scale = $fontSize / $metrics->unitsPerEm;
     $ascent = (int) round($metrics->ascender * $scale);
 
@@ -81,7 +82,7 @@ it('steps each wrapped line down by the line advance', function () {
 
     $fontSize = $block->fontSizePixels();
 
-    $metrics = new Surveyor()->parseLineMetrics($block->fontPath());
+    $metrics = new FontReader()->parseLineMetrics($block->fontPath());
     $scale = $fontSize / $metrics->unitsPerEm;
     $lineHeight = (int) round($metrics->ascender * $scale)
         + (int) round(-$metrics->descender * $scale)

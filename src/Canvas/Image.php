@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yilanboy\Preview\Canvas\Background;
+namespace Yilanboy\Preview\Canvas;
 
 use GdImage;
 use Yilanboy\Preview\Canvas\Enums\ImageFit;

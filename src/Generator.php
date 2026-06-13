@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Yilanboy\Preview;
 
 use GdImage;
-use Yilanboy\Preview\Canvas\Background\Background;
-use Yilanboy\Preview\Canvas\Background\Solid;
+use Yilanboy\Preview\Canvas\Background;
 use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Margin;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Canvas\Solid;
 use Yilanboy\Preview\Exceptions\InvalidInput;
 use Yilanboy\Preview\Exceptions\RenderFailure;
 use Yilanboy\Preview\Text\Surveyor;

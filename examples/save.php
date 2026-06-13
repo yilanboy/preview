@@ -2,9 +2,9 @@
 
 include_once __DIR__.'/../vendor/autoload.php';
 
-use Yilanboy\Preview\Canvas\Background\Solid;
 use Yilanboy\Preview\Canvas\Enums\Format;
 use Yilanboy\Preview\Canvas\Enums\Size;
+use Yilanboy\Preview\Canvas\Solid;
 use Yilanboy\Preview\Generator;
 use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\FontSize;
