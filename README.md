@@ -240,6 +240,29 @@ never exist — construction fails fast.
 > developer — never from unsanitised end-user input, which would enable arbitrary file reads and file-existence
 > probing.
 
+## Output
+
+There are two ways to produce the final image. `output()` renders it, sets the HTTP `Content-Type` header from the
+format's MIME type, and writes the bytes straight to the response — ideal for serving an OG image directly. `save($path)`
+renders it and writes the bytes to a file.
+
+```php
+$generator->output();          // serve in the HTTP response
+$generator->save('preview.png'); // write to a file
+```
+
+`format()` selects the encoding. `Format` has three cases — `PNG` (default), `JPEG`, and `WEBP`.
+
+```php
+use Yilanboy\Preview\Canvas\Enums\Format;
+
+$generator->format(Format::JPEG);
+```
+
+> **Note:** the format set via `format()` always wins — `save()` does **not** look at the file extension. The configured
+> format is the single source of truth, so `format(Format::JPEG)->save('preview.png')` writes JPEG bytes into a file
+> named `preview.png`. Keep the extension and format in sync yourself.
+
 ## Exceptions
 
 Everything the library throws lives under `Yilanboy\Preview\Exceptions`. Invalid input (bad colors, font paths,

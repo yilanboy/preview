@@ -444,3 +444,19 @@ it('saves in the requested format', function (Format $format, string $ext) {
     [Format::JPEG, 'jpg'],
     [Format::WEBP, 'webp'],
 ]);
+
+it('uses the configured format, not the file extension', function () {
+    $path = tempnam(sys_get_temp_dir(), 'preview_').'.png';
+
+    new Generator()
+        ->format(Format::JPEG)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog'))
+        ->save($path);
+
+    // The file is named .png, but format(JPEG) is the source of truth,
+    // so the bytes on disk are JPEG.
+    expect(mime_content_type($path))->toBe(Format::JPEG->mimeType());
+
+    unlink($path);
+});
