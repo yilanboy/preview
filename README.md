@@ -46,67 +46,9 @@ This code will display the following image on the web page.
 
 ![preview](images/preview.png)
 
-`TextBlock` is a `final readonly` class, so it's immutable. Every constructor
-argument is named and defaulted — to vary a field, construct a new instance:
+## Canvas
 
-```php
-$base = new TextBlock(text: 'Hello');
-$red  = new TextBlock(text: 'Hello', color: 'red');
-$big  = new TextBlock(text: 'Hello', fontSize: FontSize::Huge);
-```
-
-If no `FontSize` preset fits, pass a custom size in pixels instead. It must be at least `1`, otherwise an
-`InvalidInput` exception is thrown.
-
-```php
-$custom = new TextBlock(text: 'Hello', fontSize: 42);
-```
-
-Available customization enums live under `Yilanboy\Preview\Text\Enums`:
-
-| Enum         | Cases                                                                                              |
-|--------------|----------------------------------------------------------------------------------------------------|
-| `Font`       | `NotoSansTC` · `NotoSansSC` · `NotoSansJP` · `NotoSans` · `Inter` · `Roboto`                       |
-| `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
-| `Alignment`  | `Left` · `Center` · `Right`                                                                        |
-| `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
-
-All six bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese,
-`NotoSansSC` covers Latin + Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, and
-`Roboto` are Latin-only.
-
-> Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
-
-### Custom Fonts
-
-The `font` argument also accepts a filesystem path to your own font file, instead of a bundled `Font` case.
-
-```php
-use Yilanboy\Preview\Text\TextBlock;
-
-new TextBlock(
-    text: 'Hello',
-    font: __DIR__.'/fonts/MyFont.ttf',
-);
-```
-
-Only TrueType (`.ttf`) files are supported. OpenType (`.otf`) is rejected. A path is accepted only when **all** of
-the following hold:
-
-- the file exists and is readable;
-- the extension is `.ttf` (case-insensitive);
-- the file's first 4 bytes are the TrueType `sfnt` header (`0x00010000`) — this is what rejects an `.otf` renamed to
-  `.ttf`, whose header is `OTTO`.
-
-If the path is not a valid TrueType font, the constructor throws an `InvalidInput` exception with the message
-`The font path is not a valid TrueType font file`. Validation runs in the constructor, so an invalid `TextBlock` can
-never exist — construction fails fast.
-
-> **Security:** the font path is read straight off disk and is treated as trusted input. It must come from you, the
-> developer — never from unsanitised end-user input, which would enable arbitrary file reads and file-existence
-> probing.
-
-## Canvas Size
+### Size
 
 Pick a preset that matches where the image will be embedded. `Generator` defaults to `Size::OpenGraph`.
 
@@ -131,7 +73,7 @@ If no preset fits, set the width and height yourself. Both must be at least `1`,
 $generator->dimensions(width: 800, height: 418);
 ```
 
-## Margin
+### Margin
 
 Text is inset from the canvas edges by a fixed pixel margin. `Generator` defaults to `Margin::Medium` (60px).
 
@@ -149,29 +91,7 @@ $generator->margin(Margin::Large);
 | `Large`      | 90     |
 | `ExtraLarge` | 120    |
 
-## Line Height
-
-When text wraps to multiple lines, `LineHeight` controls the spacing between them. The value is a unit-less multiplier
-of the text's font size (CSS `line-height` semantics). `TextBlock` defaults to `LineHeight::Normal` (1.3×).
-
-```php
-use Yilanboy\Preview\Text\Enums\LineHeight;
-use Yilanboy\Preview\Text\TextBlock;
-
-$generator->description(new TextBlock(
-    text: 'A longer description that wraps to multiple lines for demonstration purposes.',
-    lineHeight: LineHeight::Loose,
-));
-```
-
-| Preset    | Multiplier |
-|-----------|------------|
-| `Snug`    | 1.15×      |
-| `Normal`  | 1.3×       |
-| `Relaxed` | 1.5×       |
-| `Loose`   | 1.75×      |
-
-## Backgrounds
+### Backgrounds
 
 `Generator::background()` accepts anything implementing the `Background` interface. Three implementations ship with the
 package.
@@ -220,6 +140,105 @@ first so the tint color shows through the partially transparent image — use it
 defaults to `#000000`.
 
 See all three modes interactively in the playground (next section).
+
+## Text
+
+### TextBlock
+
+`TextBlock` is a `final readonly` class, so it's immutable. Every constructor
+argument is named and defaulted — to vary a field, construct a new instance:
+
+```php
+$base = new TextBlock(text: 'Hello');
+$red  = new TextBlock(text: 'Hello', color: 'red');
+$big  = new TextBlock(text: 'Hello', fontSize: FontSize::Huge);
+```
+
+If no `FontSize` preset fits, pass a custom size in pixels instead. It must be at least `1`, otherwise an
+`InvalidInput` exception is thrown.
+
+```php
+$custom = new TextBlock(text: 'Hello', fontSize: 42);
+```
+
+Available customization enums live under `Yilanboy\Preview\Text\Enums`:
+
+| Enum         | Cases                                                                                              |
+|--------------|----------------------------------------------------------------------------------------------------|
+| `Font`       | `NotoSansTC` · `NotoSansSC` · `NotoSansJP` · `NotoSans` · `Inter` · `Roboto`                       |
+| `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
+| `Alignment`  | `Left` · `Center` · `Right`                                                                        |
+| `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
+
+All six bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese,
+`NotoSansSC` covers Latin + Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, and
+`Roboto` are Latin-only.
+
+> Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
+
+`Alignment` controls how each line is positioned horizontally within the margins. `TextBlock` defaults to
+`Alignment::Left`.
+
+```php
+use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\TextBlock;
+
+$generator->title(new TextBlock(
+    text: 'Preview',
+    alignment: Alignment::Center,
+));
+```
+
+### Line Height
+
+When text wraps to multiple lines, `LineHeight` controls the spacing between them. The value is a unit-less multiplier
+of the text's font size (CSS `line-height` semantics). `TextBlock` defaults to `LineHeight::Normal` (1.3×).
+
+```php
+use Yilanboy\Preview\Text\Enums\LineHeight;
+use Yilanboy\Preview\Text\TextBlock;
+
+$generator->description(new TextBlock(
+    text: 'A longer description that wraps to multiple lines for demonstration purposes.',
+    lineHeight: LineHeight::Loose,
+));
+```
+
+| Preset    | Multiplier |
+|-----------|------------|
+| `Snug`    | 1.15×      |
+| `Normal`  | 1.3×       |
+| `Relaxed` | 1.5×       |
+| `Loose`   | 1.75×      |
+
+### Custom Fonts
+
+The `font` argument also accepts a filesystem path to your own font file, instead of a bundled `Font` case.
+
+```php
+use Yilanboy\Preview\Text\TextBlock;
+
+new TextBlock(
+    text: 'Hello',
+    font: __DIR__.'/fonts/MyFont.ttf',
+);
+```
+
+Only TrueType (`.ttf`) files are supported. OpenType (`.otf`) is rejected. A path is accepted only when **all** of
+the following hold:
+
+- the file exists and is readable;
+- the extension is `.ttf` (case-insensitive);
+- the file's first 4 bytes are the TrueType `sfnt` header (`0x00010000`) — this is what rejects an `.otf` renamed to
+  `.ttf`, whose header is `OTTO`.
+
+If the path is not a valid TrueType font, the constructor throws an `InvalidInput` exception with the message
+`The font path is not a valid TrueType font file`. Validation runs in the constructor, so an invalid `TextBlock` can
+never exist — construction fails fast.
+
+> **Security:** the font path is read straight off disk and is treated as trusted input. It must come from you, the
+> developer — never from unsanitised end-user input, which would enable arbitrary file reads and file-existence
+> probing.
 
 ## Exceptions
 
