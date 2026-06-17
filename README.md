@@ -46,6 +46,91 @@ This code will display the following image on the web page.
 
 ![preview](images/preview.png)
 
+## Examples
+
+The most common use for this package is generating an [Open Graph](https://ogp.me) image — the
+preview card shown when a link is shared on social media. Instead of designing one by hand for every
+blog post, generate it from the post's own title and description. (`Generator` defaults to
+`Size::OpenGraph`, so the dimensions are already right.)
+
+### Laravel
+
+**Serve it on the fly.** Point a route at each post and render the image straight to the response:
+
+```php
+use App\Models\Post;
+use Yilanboy\Preview\Canvas\Gradient;
+use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\TextBlock;
+
+Route::get('/posts/{post}/og.png', function (Post $post) {
+    new Generator()
+        ->background(new Gradient(from: '#1e3a8a', to: '#9333ea'))
+        ->title(new TextBlock(text: $post->title, color: 'white', fontSize: FontSize::Large))
+        ->description(new TextBlock(text: $post->excerpt, color: 'white', fontSize: FontSize::Small))
+        ->output();
+})->name('posts.og');
+```
+
+Then reference the route in your page's `<head>` so social platforms pick it up:
+
+```html
+<meta property="og:image" content="{{ route('posts.og', $post) }}">
+```
+
+**Or generate it once, ahead of time.** If you'd rather not render on every request, build the image
+when a post is published and save it to disk, then serve the static file:
+
+```php
+new Generator()
+    ->background(new Gradient(from: '#1e3a8a', to: '#9333ea'))
+    ->title(new TextBlock(text: $post->title, color: 'white', fontSize: FontSize::Large))
+    ->description(new TextBlock(text: $post->excerpt, color: 'white', fontSize: FontSize::Small))
+    ->save(storage_path("og/{$post->id}.png"));
+```
+
+### Symfony
+
+Wrap the render in a `StreamedResponse` so `output()` can write the image bytes — and its
+`Content-Type` header — straight to the client:
+
+```php
+namespace App\Controller;
+
+use App\Entity\Post;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Routing\Attribute\Route;
+use Yilanboy\Preview\Canvas\Gradient;
+use Yilanboy\Preview\Generator;
+use Yilanboy\Preview\Text\Enums\FontSize;
+use Yilanboy\Preview\Text\TextBlock;
+
+class PostOgImageController
+{
+    #[Route('/posts/{id}/og.png', name: 'posts_og')]
+    public function __invoke(Post $post): StreamedResponse
+    {
+        return new StreamedResponse(function () use ($post) {
+            new Generator()
+                ->background(new Gradient(from: '#1e3a8a', to: '#9333ea'))
+                ->title(new TextBlock(text: $post->getTitle(), color: 'white', fontSize: FontSize::Large))
+                ->description(new TextBlock(text: $post->getExcerpt(), color: 'white', fontSize: FontSize::Small))
+                ->output();
+        });
+    }
+}
+```
+
+Then point the meta tag at the route — use `url()` for the absolute URL crawlers expect:
+
+```twig
+<meta property="og:image" content="{{ url('posts_og', { id: post.id }) }}">
+```
+
+The save-it-ahead-of-time approach shown above works the same here: call `save()` when the post is
+published and serve the file statically.
+
 ## Canvas
 
 ### Size
