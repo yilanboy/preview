@@ -105,6 +105,20 @@ final class Generator
         $this->format->write($image, $path);
     }
 
+    public function bytes(): string
+    {
+        ob_start();
+        $image = $this->render();
+        $this->format->write($image);
+        $imageData = ob_get_clean();
+
+        if ($imageData === false) {
+            throw new RenderFailure('Failed to get image data');
+        }
+
+        return $imageData;
+    }
+
     private function render(): GdImage
     {
         $image = imagecreatetruecolor($this->width, $this->height);

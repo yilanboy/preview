@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yilanboy\Preview\Canvas\Enums;
 
 use GdImage;
+use Yilanboy\Preview\Exceptions\RenderFailure;
 
 enum Format
 {
@@ -23,10 +24,14 @@ enum Format
 
     public function write(GdImage $image, ?string $path = null): void
     {
-        match ($this) {
+        $success = match ($this) {
             self::PNG => imagepng($image, $path),
             self::JPEG => imagejpeg($image, $path),
             self::WEBP => imagewebp($image, $path),
         };
+
+        if (! $success) {
+            throw new RenderFailure("Failed to write image in {$this->name} format");
+        }
     }
 }

@@ -460,3 +460,20 @@ it('uses the configured format, not the file extension', function () {
 
     unlink($path);
 });
+
+it('can return the image bytes', function (Format $format) {
+    $bytes = new Generator()
+        ->format($format)
+        ->dimensions(width: 100, height: 100)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'Return bytes'))
+        ->bytes();
+
+    expect($bytes)->toBeString()
+        ->and($bytes)->not->toBeEmpty()
+        ->and(new finfo(FILEINFO_MIME_TYPE)->buffer($bytes))->toBe($format->mimeType());
+})->with([
+    Format::PNG,
+    Format::JPEG,
+    Format::WEBP,
+]);
