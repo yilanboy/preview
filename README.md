@@ -218,14 +218,16 @@ Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 
 | Enum         | Cases                                                                                              |
 |--------------|----------------------------------------------------------------------------------------------------|
-| `Font`       | `NotoSansTC` · `NotoSansSC` · `NotoSansJP` · `NotoSans` · `Inter` · `Roboto`                       |
+| `Font`       | `Inter` · `InterMedium` · `Roboto` · `RobotoMedium` · `JetBrainsMono` · `JetBrainsMonoMedium` · `NotoSans` · `NotoSansMedium` · `NotoSansSC` · `NotoSansSCMedium` · `NotoSansTC` · `NotoSansTCMedium` · `NotoSansJP` · `NotoSansJPMedium` |
 | `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
 | `Alignment`  | `Left` · `Center` · `Right`                                                                        |
 | `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
 
-All six bundled fonts are variable-weight TTFs shipped under SIL OFL. `NotoSansTC` covers Latin + Traditional Chinese,
-`NotoSansSC` covers Latin + Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, and
-`Roboto` are Latin-only.
+All 14 bundled fonts are static TrueType instances shipped under SIL OFL, with separate files per weight because GD
+cannot select a weight from a variable font: each family ships a Regular (400) and a Medium (500) variant (the `*Medium`
+cases). `Inter` is the 24pt optical cut. `NotoSansTC` covers Latin + Traditional Chinese, `NotoSansSC` covers Latin +
+Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, `Roboto`, and `JetBrainsMono` (a
+monospaced family) are Latin-only.
 
 > Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
 
