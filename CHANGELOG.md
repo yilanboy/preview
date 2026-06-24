@@ -2,6 +2,52 @@
 
 All the changes to `preview` will be documented in this file.
 
+## 2.2.0 - 2026-06-24
+
+### Added
+
+- New `Font` cases adding a Medium (500) weight for every bundled family, plus a new monospaced family: `InterMedium`,
+  `RobotoMedium`, `JetBrainsMono`, `JetBrainsMonoMedium`, `NotoSansMedium`, `NotoSansSCMedium`, `NotoSansTCMedium`, and
+  `NotoSansJPMedium`. Each family now ships a Regular (400) and a Medium (500) variant.
+
+### Changed
+
+- Bundled fonts are now static TrueType instances instead of variable fonts, so GD renders the intended weight and
+  optical size (`imagettftext` cannot select an axis from a variable font). This changes the rendered output of the
+  existing `Font::Inter` (now the 24pt optical cut), `Font::Roboto`, and `Font::NotoSans` cases — regenerate any cached
+  images after upgrading.
+
+## 2.1.0 - 2026-06-20
+
+### Added
+
+- `Generator::bytes()` renders the image and returns the encoded bytes as a string, which is convenient for framework
+  responses (Laravel, Symfony) and object storage instead of writing to the output buffer or disk.
+
+### Changed
+
+- `Format::write()` now throws `RenderFailure` when GD fails to encode or write the image, surfacing failures that were
+  previously silent. `Generator::bytes()` throws the same exception if the encoded data cannot be captured.
+
+## 2.0.0 - 2026-06-15
+
+First stable release of the 2.x line. It consolidates the `2.0.0-beta.1` through `2.0.0-beta.4` pre-releases listed
+below; there are no functional changes since `2.0.0-beta.4`, only documentation and test additions. See the beta
+entries for the full detail.
+
+### Breaking
+
+- Raise the minimum PHP requirement to `^8.4`, replace `Image\Builder` with the new `Generator` entry point, replace
+  `Color\Converter` with a static top-level `ColorConverter`, remove the `backgroundColor` shortcut in favour of the
+  dedicated background classes, and move background interfaces into the `Contracts` namespace.
+
+### Added
+
+- A `Canvas` layer (`Solid`, `Gradient`, and `Image` backgrounds), a `TextBlock`-based text system with `Font`,
+  `FontSize`, `Alignment`, `LineHeight`, and `Position` enums, custom `.ttf` font support, multi-language rendering
+  (Traditional/Simplified Chinese and Japanese), `Size`/`Margin`/`Format` presets, color validation, and snapshot-based
+  image tests.
+
 ## 2.0.0-beta.4 - 2026-06-13
 
 This is a pre-release intended for testing. Install it with `composer require yilanboy/preview:^2.0@beta`. APIs may
