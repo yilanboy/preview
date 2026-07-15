@@ -320,6 +320,17 @@ use Yilanboy\Preview\Canvas\Enums\Format;
 $generator->format(Format::JPEG);
 ```
 
+`quality()` changes the output quality for lossy formats (`JPEG` and `WEBP`). It accepts values from `0` to `100`.
+
+```php
+$generator
+    ->format(Format::WEBP)
+    ->quality(85);
+```
+
+> **Note:** `quality()` does not apply to `PNG`. PNG compression is lossless, so changing compression affects encoding
+> speed and file size, not visual image quality.
+
 > **Note:** the format set via `format()` always wins — `save()` does **not** look at the file extension. The configured
 > format is the single source of truth, so `format(Format::JPEG)->save('preview.png')` writes JPEG bytes into a file
 > named `preview.png`. Keep the extension and format in sync yourself.

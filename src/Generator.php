@@ -32,6 +32,9 @@ final class Generator
 
     private Format $format = Format::PNG;
 
+    /** @var int<0, 100>|null */
+    private ?int $quality = null;
+
     public function __construct(
         private Background $background = new Solid(color: '#f9fafb'),
         private readonly Surveyor $surveyor = new Surveyor,
@@ -78,6 +81,17 @@ final class Generator
         return $this;
     }
 
+    public function quality(?int $quality): self
+    {
+        if ($quality !== null && ($quality < 0 || $quality > 100)) {
+            throw new InvalidInput('Quality must be between 0 and 100');
+        }
+
+        $this->quality = $quality;
+
+        return $this;
+    }
+
     public function title(TextBlock $block): self
     {
         $this->title = $block;
@@ -96,20 +110,20 @@ final class Generator
     {
         $image = $this->render();
         header('Content-Type: '.$this->format->mimeType());
-        $this->format->write($image);
+        $this->format->write($image, quality: $this->quality);
     }
 
     public function save(string $path): void
     {
         $image = $this->render();
-        $this->format->write($image, $path);
+        $this->format->write($image, $path, $this->quality);
     }
 
     public function bytes(): string
     {
         ob_start();
         $image = $this->render();
-        $this->format->write($image);
+        $this->format->write($image, quality: $this->quality);
         $imageData = ob_get_clean();
 
         if ($imageData === false) {

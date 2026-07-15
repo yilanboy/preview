@@ -46,8 +46,8 @@ function imagesMatch(
     // FreeType produces scattered single-pixel diffs along glyph edges
     // that don't share neighbors. Real content changes produce contiguous
     // regions where most differing pixels have differing neighbors.
-    $actual = imagecreatefrompng($actualPath);
-    $expected = imagecreatefrompng($fixturePath);
+    $actual = imageCreateFromPath($actualPath);
+    $expected = imageCreateFromPath($fixturePath);
 
     if ($actual === false || $expected === false) {
         return false;
@@ -105,4 +105,14 @@ function imagesMatch(
     }
 
     return ($clustered / ($width * $height)) <= $clusterThreshold;
+}
+
+function imageCreateFromPath(string $path): GdImage|false
+{
+    return match (mime_content_type($path)) {
+        'image/png' => imagecreatefrompng($path),
+        'image/jpeg' => imagecreatefromjpeg($path),
+        'image/webp' => imagecreatefromwebp($path),
+        default => false,
+    };
 }

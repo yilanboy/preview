@@ -2,6 +2,20 @@
 
 All the changes to `preview` will be documented in this file.
 
+## 2.3.0 - 2026-07-15
+
+### Added
+
+- `Generator::quality()` configures output quality for lossy `JPEG` and `WEBP` images. It accepts values from `0` to
+  `100`, and `null` keeps GD's default encoding behavior.
+- Documentation now clarifies that `quality()` does not apply to `PNG` because PNG compression is lossless; changing PNG
+  compression affects encoding speed and file size, not visual image quality.
+
+### Fixed
+
+- Snapshot image comparison now decodes fixtures by image type, so `WEBP` and `JPEG` output tests can be compared in
+  addition to `PNG` snapshots.
+
 ## 2.2.0 - 2026-06-24
 
 ### Added
