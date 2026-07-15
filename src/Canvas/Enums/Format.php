@@ -22,12 +22,13 @@ enum Format
         };
     }
 
-    public function write(GdImage $image, ?string $path = null): void
+    /** @param  int<0, 100>|null  $quality */
+    public function write(GdImage $image, ?string $path = null, ?int $quality = null): void
     {
         $success = match ($this) {
             self::PNG => imagepng($image, $path),
-            self::JPEG => imagejpeg($image, $path),
-            self::WEBP => imagewebp($image, $path),
+            self::JPEG => imagejpeg($image, $path, $quality ?? -1),
+            self::WEBP => imagewebp($image, $path, $quality ?? -1),
         };
 
         if (! $success) {

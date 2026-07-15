@@ -53,3 +53,20 @@ it('applies a margin preset', function () {
 
     expect($margin)->toBe(Margin::Large);
 });
+
+it('applies output quality', function () {
+    $generator = new Generator()->quality(85);
+
+    $quality = new ReflectionClass($generator)
+        ->getProperty('quality')
+        ->getValue($generator);
+
+    expect($quality)->toBe(85);
+});
+
+it('rejects output quality outside 0 and 100', function (int $quality) {
+    new Generator()->quality($quality);
+})->with([
+    'below minimum' => [-1],
+    'above maximum' => [101],
+])->throws(InvalidInput::class, 'Quality must be between 0 and 100');

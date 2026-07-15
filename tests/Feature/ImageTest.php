@@ -192,6 +192,50 @@ it('renders with a semi-transparent image background', function () {
     unlink($actual);
 });
 
+it('can render a webp image with a quality option', function () {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.webp';
+    $fixture = __DIR__.'/../Fixtures/snapshot.webp';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->format(Format::WEBP)
+        ->quality(100)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog'))
+        ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
+        ->save($actual);
+
+    if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
+        copy($actual, $fixture);
+    }
+
+    expect(imagesMatch($actual, $fixture))->toBeTrue();
+
+    unlink($actual);
+});
+
+it('can render a jpeg image with a quality option', function () {
+    $actual = tempnam(sys_get_temp_dir(), 'preview_').'.jpeg';
+    $fixture = __DIR__.'/../Fixtures/snapshot.jpeg';
+
+    new Generator()
+        ->size(Size::OpenGraph)
+        ->format(Format::JPEG)
+        ->quality(100)
+        ->background(new Solid('#10b981'))
+        ->title(new TextBlock(text: 'My Blog'))
+        ->description(new TextBlock(text: 'A true master is an eternal student', color: 'white'))
+        ->save($actual);
+
+    if (getenv('UPDATE_SNAPSHOTS') || ! file_exists($fixture)) {
+        copy($actual, $fixture);
+    }
+
+    expect(imagesMatch($actual, $fixture))->toBeTrue();
+
+    unlink($actual);
+});
+
 it('matches gradient-vertical snapshot', function () {
     $actual = tempnam(sys_get_temp_dir(), 'preview_').'.png';
     $fixture = __DIR__.'/../Fixtures/gradient-vertical.png';
