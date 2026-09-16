@@ -2,6 +2,20 @@
 
 All the changes to `preview` will be documented in this file.
 
+## 2.4.0 - 2026-09-16
+
+### Added
+
+- `FontStorage` class to manage on-demand font downloading, local caching, and custom storage paths:
+  - `FontStorage::setStoragePath(?string $path)` allows configuring the directory where downloaded fonts are cached (defaults to `sys_get_temp_dir() . '/yilanboy-preview/fonts'`).
+  - `FontStorage::setBaseUrl(?string $url)` allows configuring a custom CDN mirror or internal base URL (defaults to jsDelivr CDN).
+  - `FontStorage::download(Font $font)` and `FontStorage::downloadAll()` allow pre-warming fonts during Docker builds or deployment steps for offline and low-latency environments.
+- Excluded the `fonts/` directory from Composer distribution archives (`/fonts export-ignore` in `.gitattributes`), reducing package installation size from ~38MB to under 50KB.
+
+### Changed
+
+- `Font::*->path()` now resolves font paths dynamically via `FontStorage::resolve()`. When rendering text with a preset font for the first time, the font is downloaded on demand and cached locally.
+
 ## 2.3.0 - 2026-07-15
 
 ### Added
