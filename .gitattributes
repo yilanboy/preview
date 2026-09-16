@@ -10,3 +10,4 @@
 /phpstan.neon  export-ignore
 /phpunit.xml   export-ignore
 /CHANGELOG.md  export-ignore
+/fonts         export-ignore

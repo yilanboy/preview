@@ -1,10 +1,14 @@
 <?php
 
-use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\FontValidator;
 
 it('accepts a real TrueType font file', function () {
-    expect(FontValidator::isValidTtf(Font::NotoSansTC->path()))->toBeTrue();
+    $validTtf = tempnam(sys_get_temp_dir(), 'valid').'.ttf';
+    file_put_contents($validTtf, hex2bin('00010000').'valid-header-and-body');
+
+    expect(FontValidator::isValidTtf($validTtf))->toBeTrue();
+
+    unlink($validTtf);
 });
 
 it('rejects a path that does not exist', function () {
