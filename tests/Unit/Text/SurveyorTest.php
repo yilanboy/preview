@@ -1,6 +1,7 @@
 <?php
 
 use Yilanboy\Preview\Text\Enums\Alignment;
+use Yilanboy\Preview\Text\Enums\Font;
 use Yilanboy\Preview\Text\Enums\LineHeight;
 use Yilanboy\Preview\Text\Enums\Position;
 use Yilanboy\Preview\Text\FontReader;
@@ -108,7 +109,7 @@ it('returns no lines when given no blocks', function () {
 
 it('returns a single line when text fits in the max width', function () {
     $surveyor = new Surveyor;
-    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+    $fontPath = Font::NotoSansTC->path();
 
     $lines = $surveyor->wrapText(
         text: 'Hello World',
@@ -127,7 +128,7 @@ it('returns a single line when text fits in the max width', function () {
 
 it('splits long text into multiple trimmed lines', function () {
     $surveyor = new Surveyor;
-    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+    $fontPath = Font::NotoSansTC->path();
 
     $lines = $surveyor->wrapText(
         text: 'The quick brown fox jumps over the lazy dog while the early bird catches the worm',
@@ -149,7 +150,7 @@ it('splits long text into multiple trimmed lines', function () {
 
 it('wraps text when containing manual newlines', function () {
     $surveyor = new Surveyor;
-    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+    $fontPath = Font::NotoSansTC->path();
 
     $lines = $surveyor->wrapText(
         text: "Line 1\nLine 2\n\nLine 4",
@@ -167,7 +168,7 @@ it('wraps text when containing manual newlines', function () {
 
 it('wraps text when containing CRLF newlines', function () {
     $surveyor = new Surveyor;
-    $fontPath = __DIR__.'/../../../fonts/noto-sans-tc.ttf';
+    $fontPath = Font::NotoSansTC->path();
 
     $lines = $surveyor->wrapText(
         text: "Line 1\r\nLine 2\r\n\r\nLine 4",

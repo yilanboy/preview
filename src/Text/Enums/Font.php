@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yilanboy\Preview\Text\Enums;
 
+use Yilanboy\Preview\Text\FontStorage;
+
 enum Font: string
 {
     case Inter = 'inter.ttf';
@@ -23,6 +25,6 @@ enum Font: string
 
     public function path(): string
     {
-        return __DIR__.'/../../../fonts/'.$this->value;
+        return FontStorage::resolve($this);
     }
 }

@@ -216,20 +216,82 @@ $custom = new TextBlock(text: 'Hello', fontSize: 42);
 
 Available customization enums live under `Yilanboy\Preview\Text\Enums`:
 
-| Enum         | Cases                                                                                              |
-|--------------|----------------------------------------------------------------------------------------------------|
+| Enum         | Cases                                                                                                                                                                                                                                     |
+|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Font`       | `Inter` · `InterMedium` · `Roboto` · `RobotoMedium` · `JetBrainsMono` · `JetBrainsMonoMedium` · `NotoSans` · `NotoSansMedium` · `NotoSansSC` · `NotoSansSCMedium` · `NotoSansTC` · `NotoSansTCMedium` · `NotoSansJP` · `NotoSansJPMedium` |
-| `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100) |
-| `Alignment`  | `Left` · `Center` · `Right`                                                                        |
-| `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                  |
+| `FontSize`   | `ExtraSmall` (24) · `Small` (32) · `Medium` (50) · `Large` (64) · `ExtraLarge` (80) · `Huge` (100)                                                                                                                                        |
+| `Alignment`  | `Left` · `Center` · `Right`                                                                                                                                                                                                               |
+| `LineHeight` | `Snug` (1.15) · `Normal` (1.3) · `Relaxed` (1.5) · `Loose` (1.75)                                                                                                                                                                         |
 
-All 14 bundled fonts are static TrueType instances shipped under SIL OFL, with separate files per weight because GD
-cannot select a weight from a variable font: each family ships a Regular (400) and a Medium (500) variant (the `*Medium`
-cases). `Inter` is the 24pt optical cut. `NotoSansTC` covers Latin + Traditional Chinese, `NotoSansSC` covers Latin +
-Simplified Chinese, and `NotoSansJP` covers Latin + Japanese; `NotoSans`, `Inter`, `Roboto`, and `JetBrainsMono` (a
-monospaced family) are Latin-only.
+### Fonts & On-Demand Downloading
+
+To keep the package installation lightweight, font files are **not bundled** within the package archive.
+Instead, fonts are downloaded on demand upon first use and cached locally.
+
+> [!NOTE]
+> **First-use Network Requirement**: When you render text with a font for the first time, the library downloads the
+`.ttf` file from the remote CDN. Once downloaded, subsequent renders load the font directly from the local cache with
+zero network overhead.
+
+All 14 font presets are static TrueType instances released under SIL OFL, with separate files per weight because GD
+cannot select a weight from a variable font: each family provides a Regular (400) and a Medium (500) variant (the
+`*Medium` cases).
+
+- `NotoSansTC`: Latin + Traditional Chinese
+- `NotoSansSC`: Latin + Simplified Chinese
+- `NotoSansJP`: Latin + Japanese
+- `NotoSans`, `Inter`, `Roboto`, `JetBrainsMono`: Latin-only
 
 > Currently, the text supports English, Chinese (Traditional and Simplified), and Japanese.
+
+#### Configuring Font Storage Path
+
+By default, fonts are cached in the system temporary directory (`sys_get_temp_dir() . '/yilanboy-preview/fonts'`, such
+as `/tmp/yilanboy-preview/fonts`).
+
+If you need to customize the font storage path (for example, to persist fonts across deployments, store them in your
+project's storage directory, or use a mounted volume), you can configure it via `FontStorage::setStoragePath()`:
+
+```php
+use Yilanboy\Preview\Text\FontStorage;
+
+FontStorage::setStoragePath('/path/to/custom/fonts');
+```
+
+#### Pre-Warming Fonts (Offline / CI / Docker)
+
+If your production environment has restricted network access (e.g., private VPC, air-gapped server) or you want to avoid
+first-request download latency, you can pre-download fonts during your Docker build or deployment step:
+
+```php
+use Yilanboy\Preview\Text\Enums\Font;
+use Yilanboy\Preview\Text\FontStorage;
+
+// Download a specific font
+FontStorage::download(Font::NotoSansTC);
+
+// Or pre-download all fonts
+FontStorage::downloadAll();
+```
+
+In a `Dockerfile`:
+
+```dockerfile
+RUN php -r "require 'vendor/autoload.php'; \Yilanboy\Preview\Text\FontStorage::downloadAll();"
+```
+
+#### Custom CDN Base URL
+
+Fonts are downloaded by default from jsDelivr CDN (`https://cdn.jsdelivr.net/gh/yilanboy/preview@main/fonts`). You can
+configure a custom base URL or internal mirror:
+
+```php
+use Yilanboy\Preview\Text\FontStorage;
+
+FontStorage::setBaseUrl('https://my-internal-cdn.example.com/fonts');
+```
+
+### Alignment
 
 `Alignment` controls how each line is positioned horizontally within the margins. `TextBlock` defaults to
 `Alignment::Left`.
@@ -268,7 +330,7 @@ $generator->description(new TextBlock(
 
 ### Custom Fonts
 
-The `font` argument also accepts a filesystem path to your own font file, instead of a bundled `Font` case.
+The `font` argument also accepts a filesystem path to your own font file, instead of a preset `Font` case.
 
 ```php
 use Yilanboy\Preview\Text\TextBlock;
